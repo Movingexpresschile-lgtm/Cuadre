@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   BusFront, FileText, TrendingDown, ShieldCheck, 
   CheckCircle2, ChevronRight, Lock, 
-  BarChart3, LogIn, User, Send, MessageCircle, Calendar, Filter, LogOut
+  BarChart3, LogIn, User, Send, MessageCircle, Calendar, Filter, LogOut, Download
 } from 'lucide-react';
 
 export default function App() {
@@ -113,6 +113,7 @@ export default function App() {
       return; 
     }
     if (trialCount >= 3) { 
+      setCurrentView('landing');
       setShowPaywall(true); 
     } else { 
       setCurrentView('setup'); 
@@ -128,7 +129,6 @@ export default function App() {
     setCurrentView(view);
   };
 
-  // Botón Neón - Compartir directo por WhatsApp
   const shareApp = () => {
     const text = "Estoy usando RutaCuadrada para el cuadre diario en segundos. Prueba Gratis Aquí: https://www.rutacuadrada.cl";
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
@@ -137,6 +137,7 @@ export default function App() {
   // Guardar Liquidación
   const saveLiquidation = () => {
     if (trialCount >= 3) {
+      setCurrentView('landing');
       setShowPaywall(true);
       return;
     }
@@ -185,6 +186,13 @@ export default function App() {
     return `*RutaCuadrada - Reporte de Liquidación*\nFecha: ${data.date}\nConductor: ${data.driverName}\nVehículo: ${data.plate} - Maq: ${data.machineNum}\n\n-- DETALLE DE INGRESOS --\n${ticketDetails}\n*INGRESO TOTAL: ${formatMoney(data.totalIncome)}*\n\n-- GASTOS --\nPlanilla: ${formatMoney(data.expenses.planilla || 0)}\nPetróleo: ${formatMoney(data.expenses.petroleo || 0)}\nLimpieza: ${formatMoney(data.expenses.limpieza || 0)}\nMantenciones: ${formatMoney(data.expenses.mantenciones || 0)}\nOtros Gastos: ${formatMoney(data.expenses.otros || 0)}\nComisión Chofer: ${formatMoney(data.driverCommission || 0)}\n*TOTAL GASTOS: ${formatMoney(data.totalExpenses)}*\n\n-- SALDO A ENTREGAR --\n*${formatMoney(data.totalBalance)}*\n\nObservaciones: ${data.observations || 'Ninguna'}`;
   };
 
+  const handlePrintHistory = (liq) => {
+    setCurrentSavedLiq(liq);
+    setTimeout(() => {
+      window.print();
+    }, 300);
+  };
+
   // ===================== VISTAS =====================
 
   if (currentView === 'landing') {
@@ -204,7 +212,6 @@ export default function App() {
               >
                 <User size={16} /> Mi Panel
               </button>
-              {/* Menú Desplegable del Panel */}
               {isPanelOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 border border-slate-100 z-50 overflow-hidden">
                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 mb-1">
@@ -229,21 +236,19 @@ export default function App() {
           )}
         </nav>
 
-        {/* Hero con Imagen Mejorada */}
+        {/* Hero */}
         <header className="bg-slate-900 text-white pt-16 pb-24 px-4 text-center overflow-hidden relative flex-grow flex flex-col justify-center">
-          {/* Fondo escénico: Ruta montañosa y gradiente suave */}
-          <div className="absolute inset-0 opacity-30 bg-[url('https://images.unsplash.com/photo-1464039397811-476f652a343b?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center" />
-          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-slate-900/80 to-slate-900" />
+          <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1544620347-c4fd6a3d5957?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center" />
+          <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 to-slate-900" />
           
           <div className="max-w-4xl mx-auto space-y-8 relative z-10">
-            
-            {/* Botón CyberDay Gigante y de Dos Líneas */}
             <div className="flex justify-center">
-              <a href="https://www.flow.cl/btn.php?token=TULINKAQUI" target="_blank" rel="noopener noreferrer" 
-                 className="inline-flex flex-col items-center bg-red-600 text-white font-black px-8 py-3 rounded-2xl animate-pulse shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border border-red-400">
+              <button 
+                 onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
+                 className="inline-flex flex-col items-center bg-red-600 text-white font-black px-8 py-3 rounded-2xl animate-pulse shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border border-red-400 cursor-pointer">
                 <span className="text-sm md:text-lg tracking-wide">⚡ OFERTA CYBER: 75% DESCUENTO ⚡</span>
                 <span className="text-xs md:text-sm font-medium mt-1 text-red-100">Adquiere tu licencia de por vida</span>
-              </a>
+              </button>
             </div>
             
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight mt-6 text-white drop-shadow-md">
@@ -251,20 +256,18 @@ export default function App() {
               <span className="text-emerald-400 block mt-2">Sin Errores.</span>
             </h1>
             
-            {/* Botón Principal Permanente */}
             <div className="mt-8">
               <button onClick={handleStartApp} className="bg-emerald-500 text-slate-900 font-black text-xl py-5 px-12 rounded-full hover:bg-emerald-400 transition-transform transform hover:scale-105 shadow-[0_10px_30px_rgba(16,185,129,0.3)]">
                 Iniciar mis cálculos <ChevronRight className="inline" size={24} />
               </button>
             </div>
 
-            {/* Botones de Acción Secundarios */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-              <button onClick={() => handleNavigate('stats')} className="flex items-center justify-center gap-2 bg-slate-800/80 backdrop-blur-sm text-white px-6 py-3 rounded-full border border-slate-700 hover:border-emerald-500 hover:text-emerald-400 transition-colors shadow-lg">
-                <BarChart3 size={20} /> Mis Estadísticas
+              <button onClick={() => handleNavigate('stats')} className="animate-bounce flex items-center justify-center gap-2 bg-slate-800/80 backdrop-blur-sm text-white px-6 py-3 rounded-full border border-slate-700 hover:border-emerald-500 hover:text-emerald-400 transition-colors shadow-lg">
+                <BarChart3 size={20} className="text-emerald-400" /> Mis Estadísticas
               </button>
               <button onClick={() => handleNavigate('reports')} className="flex items-center justify-center gap-2 bg-slate-800/80 backdrop-blur-sm text-white px-6 py-3 rounded-full border border-slate-700 hover:border-blue-500 hover:text-blue-400 transition-colors shadow-lg">
-                <FileText size={20} /> Reportes PDF
+                <FileText size={20} className="text-blue-400" /> Reportes PDF
               </button>
             </div>
           </div>
@@ -332,9 +335,12 @@ export default function App() {
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pago Único - Licencia Permanente</p>
                 </div>
                 <div className="space-y-3">
-                  <a href="https://www.flow.cl/btn.php?token=TULINKAQUI" target="_blank" rel="noopener noreferrer" className="block w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-colors shadow-lg">
+                  <button 
+                    onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
+                    className="block w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
+                  >
                     Comprar Licencia Ahora
-                  </a>
+                  </button>
                   <button onClick={() => setShowPaywall(false)} className="text-slate-400 text-sm font-medium hover:text-slate-600">
                     Cancelar
                   </button>
@@ -379,7 +385,7 @@ export default function App() {
 
               {/* Destino del Reporte */}
               <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 space-y-4">
-                <h3 className="font-bold text-blue-900 text-sm uppercase flex items-center gap-2"><Send size={16}/> Destino del Reporte (Garita/WhatsApp)</h3>
+                <h3 className="font-bold text-blue-900 text-sm uppercase flex items-center gap-2"><Send size={16}/> Destino del Reporte</h3>
                 <div className="grid grid-cols-1 gap-4">
                   <input type="tel" placeholder="WhatsApp de la Garita o Dueño (+569...)" className="w-full p-3 border border-blue-200 rounded-xl outline-none focus:border-blue-500 font-medium" value={headerInfo.garitaPhone} onChange={e => setHeaderInfo({...headerInfo, garitaPhone: e.target.value})} />
                 </div>
@@ -417,6 +423,95 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-100 p-2 md:p-6 font-sans print:bg-white print:p-0">
         
+        {/* Vista Imprimible (Solo visible al imprimir PDF o Reportes Históricos) */}
+        <div className="hidden print:block w-full max-w-3xl mx-auto p-8 font-sans">
+          {currentSavedLiq && (
+            <div className="space-y-6">
+              <div className="text-center border-b-2 border-slate-800 pb-4">
+                <h1 className="text-3xl font-black">LIQUIDACIÓN DE RUTA</h1>
+                <p className="text-lg text-slate-600 mt-1">{currentSavedLiq.company || 'Empresa de Transporte'} - {currentSavedLiq.route}</p>
+                <p className="text-sm text-slate-500 font-mono mt-1">ID: #{currentSavedLiq.id} | Fecha: {currentSavedLiq.date}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 text-sm border-b border-slate-200 pb-4">
+                <div><span className="font-bold">Conductor:</span> {currentSavedLiq.driverName}</div>
+                <div><span className="font-bold">RUT:</span> {currentSavedLiq.driverRut}</div>
+                <div><span className="font-bold">Vehículo PPU:</span> {currentSavedLiq.plate}</div>
+                <div><span className="font-bold">Máquina Nº:</span> {currentSavedLiq.machineNum}</div>
+              </div>
+
+              <table className="w-full text-sm border-collapse">
+                <thead>
+                  <tr className="bg-slate-100 border-b-2 border-slate-300">
+                    <th className="text-left py-2 px-2">Boleto</th>
+                    <th className="text-right py-2 px-2">Inicio</th>
+                    <th className="text-right py-2 px-2">Fin</th>
+                    <th className="text-center py-2 px-2">Pax</th>
+                    <th className="text-right py-2 px-2">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Object.keys(currentSavedLiq.tickets).map(cat => (
+                    <tr key={cat} className="border-b border-slate-100">
+                      <td className="py-2 px-2 font-medium">{labels[cat]} <span className="text-xs text-slate-500">(${currentSavedLiq.ticketPrices[cat]})</span></td>
+                      <td className="text-right py-2 px-2 font-mono">{currentSavedLiq.tickets[cat].start || '-'}</td>
+                      <td className="text-right py-2 px-2 font-mono">{currentSavedLiq.tickets[cat].end || '-'}</td>
+                      <td className="text-center py-2 px-2 font-bold">{getPassengers(cat, currentSavedLiq.tickets)}</td>
+                      <td className="text-right py-2 px-2">{formatMoney(getAmount(cat, currentSavedLiq.tickets, currentSavedLiq.ticketPrices))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <div className="flex justify-between items-center py-2 border-b-2 border-slate-800">
+                <span className="font-black text-lg">TOTAL INGRESOS</span>
+                <span className="font-black text-xl">{formatMoney(currentSavedLiq.totalIncome)}</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-8 text-sm mt-6">
+                <div>
+                  <h3 className="font-bold border-b border-slate-300 mb-2 pb-1">Vueltas Registradas</h3>
+                  <div className="flex gap-2">
+                    {['v1', 'v2', 'v3', 'v4'].map((v, i) => (
+                      <span key={v} className={`px-2 py-1 border rounded ${currentSavedLiq.laps[v] ? 'bg-slate-200 font-bold' : 'text-slate-300'}`}>
+                        V{i+1} {currentSavedLiq.laps[v] ? '✓' : ''}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h3 className="font-bold border-b border-slate-300 mb-2 pb-1">Desglose de Gastos</h3>
+                  <div className="space-y-1">
+                    <div className="flex justify-between"><span>Planilla:</span> <span>{formatMoney(currentSavedLiq.expenses.planilla)}</span></div>
+                    <div className="flex justify-between"><span>Petróleo:</span> <span>{formatMoney(currentSavedLiq.expenses.petroleo)}</span></div>
+                    <div className="flex justify-between"><span>Limpieza:</span> <span>{formatMoney(currentSavedLiq.expenses.limpieza)}</span></div>
+                    <div className="flex justify-between"><span>Mantenciones:</span> <span>{formatMoney(currentSavedLiq.expenses.mantenciones)}</span></div>
+                    <div className="flex justify-between"><span>Otros Gastos:</span> <span>{formatMoney(currentSavedLiq.expenses.otros)}</span></div>
+                    <div className="flex justify-between font-bold"><span>Comisión Conductor:</span> <span>{formatMoney(currentSavedLiq.driverCommission)}</span></div>
+                    <div className="flex justify-between font-black border-t border-slate-300 pt-1 mt-1"><span>Total Gastos:</span> <span>{formatMoney(currentSavedLiq.totalExpenses)}</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-100 p-4 rounded mt-6 flex justify-between items-center">
+                <span className="font-black text-2xl uppercase">Saldo Final a Entregar</span>
+                <span className="font-black text-3xl">{formatMoney(currentSavedLiq.totalBalance)}</span>
+              </div>
+
+              {currentSavedLiq.observations && (
+                <div className="mt-6 border border-slate-300 p-4 rounded text-sm">
+                  <span className="font-bold block mb-1">Observaciones / Notas:</span>
+                  <p>{currentSavedLiq.observations}</p>
+                </div>
+              )}
+
+              <div className="text-center text-xs text-slate-400 mt-12">
+                Generado por RutaCuadrada (rutacuadrada.cl) - Menos Cuentas. Más Control.
+              </div>
+            </div>
+          )}
+        </div>
+
         {/* Interfaz Principal de la App (Visible en Pantalla) */}
         <div className="print:hidden max-w-3xl mx-auto space-y-4 relative pb-20">
           
@@ -603,7 +698,6 @@ export default function App() {
 
   // ===================== ESTADÍSTICAS POR MES =====================
   if (currentView === 'stats') {
-    // Agrupar historial por mes para cálculos
     const groupedStats = liquidations.reduce((acc, liq) => {
       const month = liq.monthYear || 'Mes Desconocido';
       if (!acc[month]) acc[month] = { driver: 0, company: 0, pax: 0, laps: 0 };
@@ -622,8 +716,6 @@ export default function App() {
     }, {});
 
     const availableMonths = Object.keys(groupedStats);
-    
-    // Si no hay datos, mostrar cero, si hay, mostrar el del mes seleccionado
     const currentStats = availableMonths.length > 0 && groupedStats[selectedStatMonth] 
       ? groupedStats[selectedStatMonth] 
       : { driver: 0, company: 0, pax: 0, laps: 0 };
@@ -677,7 +769,6 @@ export default function App() {
 
   // ===================== REPORTES (Historial) =====================
   if (currentView === 'reports') {
-    // Agrupar por mes
     const grouped = liquidations.reduce((acc, liq) => {
       const month = liq.monthYear || 'Mes Desconocido';
       if (!acc[month]) acc[month] = [];
@@ -710,13 +801,12 @@ export default function App() {
                         <p className="text-sm text-slate-500">Saldo: {formatMoney(liq.totalBalance)} | Pax: {Object.keys(liq.tickets).reduce((a,c) => a+getPassengers(c, liq.tickets),0)}</p>
                       </div>
                       <div className="flex gap-2">
-                         <a 
-                          href={`https://wa.me/?text=${encodeURIComponent(generateReportText(liq))}`}
-                          target="_blank" rel="noopener noreferrer"
-                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-[#25D366] font-bold rounded-lg text-sm flex items-center gap-2 border border-slate-200"
+                        <button 
+                          onClick={() => handlePrintHistory(liq)}
+                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm flex items-center gap-2"
                         >
-                          <MessageCircle size={16}/> Enviar WhatsApp
-                        </a>
+                          <Download size={16}/> Descargar PDF
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -749,26 +839,12 @@ export default function App() {
               <p>
                 En <strong>RutaCuadrada</strong>, estamos comprometidos con la protección y el manejo responsable de la información generada por nuestros usuarios (conductores y empresas de transporte).
               </p>
-              
               <h2 className="text-lg font-bold text-slate-800">1. Confidencialidad de los Datos</h2>
-              <p>
-                Los datos ingresados en la plataforma, incluyendo montos recaudados, pasajeros transportados, observaciones y datos personales, son estrictamente confidenciales. Estos datos se almacenan localmente en el dispositivo del usuario mediante tecnologías de almacenamiento web (Local Storage) para facilitar el acceso rápido a su historial.
-              </p>
-
+              <p>Los datos ingresados en la plataforma son estrictamente confidenciales y se almacenan localmente en el dispositivo del usuario.</p>
               <h2 className="text-lg font-bold text-slate-800">2. Veracidad y Responsabilidad</h2>
-              <p>
-                La veracidad, exactitud y legalidad de los datos ingresados en los cálculos (folios de boletos, montos de gastos, comisiones y notas) son <strong>exclusiva responsabilidad del usuario</strong> que opera la aplicación. RutaCuadrada funciona únicamente como una herramienta de cálculo matemático y generación de comprobantes, y no asume responsabilidad por errores de digitación, auditorías internas de las empresas de transporte, o declaraciones legales derivadas de la información generada.
-              </p>
-
+              <p>La veracidad y legalidad de los datos ingresados en los cálculos son <strong>exclusiva responsabilidad del usuario</strong> que opera la aplicación.</p>
               <h2 className="text-lg font-bold text-slate-800">3. Uso del Servicio</h2>
-              <p>
-                El uso de la prueba gratuita está limitado a un máximo de 3 liquidaciones guardadas. El uso continuo de la herramienta requiere el pago de la licencia correspondiente. Está prohibida la manipulación del código o del almacenamiento del navegador para evadir los controles de licencia.
-              </p>
-
-              <h2 className="text-lg font-bold text-slate-800">4. Compartir Información (Reportes)</h2>
-              <p>
-                Al utilizar la función de "Enviar por WhatsApp", el usuario acepta explícitamente transferir los datos de su liquidación diaria a los destinatarios que él mismo seleccione en su aplicación de mensajería.
-              </p>
+              <p>El uso de la prueba gratuita está limitado a un máximo de 3 liquidaciones guardadas.</p>
               
               <div className="mt-8 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
                 <p className="font-bold text-slate-700">¿Tienes dudas legales o comerciales?</p>
@@ -784,6 +860,5 @@ export default function App() {
   return <div>Cargando...</div>;
 }
 
-// Iconos Helper para Estadísticas
 const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
 const RotateCcwIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
