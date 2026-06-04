@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   BusFront, FileText, TrendingDown, ShieldCheck, 
   CheckCircle2, ChevronRight, Lock, 
@@ -10,6 +10,8 @@ export default function App() {
   const [showPaywall, setShowPaywall] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [userEmail, setUserEmail] = useState('');
+  const [userPassword, setUserPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   
@@ -17,32 +19,108 @@ export default function App() {
   const [trialCount, setTrialCount] = useState(0); 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentSavedLiq, setCurrentSavedLiq] = useState(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  // PWA install
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const [showIosBanner, setShowIosBanner] = useState(false);
 
   // Estadísticas Mensuales
   const [selectedStatMonth, setSelectedStatMonth] = useState('');
 
-  // Cargar datos guardados en el dispositivo
+  const printRef = useRef(null);
+
+  // ===================== CARGAR DATOS AL INICIO =====================
   useEffect(() => {
     const saved = localStorage.getItem('rutacuadrada_history');
     const trials = localStorage.getItem('rutacuadrada_trial_count');
-    const loggedUser = localStorage.getItem('rutacuadrada_user');
+
+    // Verificar sesión persistente
+    const sessionExpiry = localStorage.getItem('rutacuadrada_session_expiry');
+    const sessionEmail = localStorage.getItem('rutacuadrada_session_email');
+
+    if (sessionEmail && sessionExpiry) {
+      const now = new Date().getTime();
+      if (now < parseInt(sessionExpiry)) {
+        setUserEmail(sessionEmail);
+        setIsLoggedIn(true);
+        // Cargar datos del conductor para este usuario
+        const driverData = localStorage.getItem(`rutacuadrada_driver_${sessionEmail}`);
+        if (driverData) {
+          const parsed = JSON.parse(driverData);
+          setHeaderInfo(prev => ({ ...prev, ...parsed }));
+        }
+      } else {
+        // Sesión expirada
+        localStorage.removeItem('rutacuadrada_session_expiry');
+        localStorage.removeItem('rutacuadrada_session_email');
+      }
+    } else {
+      // Compatibilidad con sistema anterior
+      const loggedUser = localStorage.getItem('rutacuadrada_user');
+      if (loggedUser) {
+        setUserEmail(loggedUser);
+        setIsLoggedIn(true);
+      }
+    }
     
     if (saved) {
       const parsed = JSON.parse(saved);
       setLiquidations(parsed);
-      
       if (parsed.length > 0 && !selectedStatMonth) {
         setSelectedStatMonth(parsed[0].monthYear || 'Mes Desconocido');
       }
     }
     if (trials) setTrialCount(parseInt(trials));
-    if (loggedUser) {
-      setUserEmail(loggedUser);
-      setIsLoggedIn(true);
+
+    // PWA: detectar visitas para mostrar banner de instalación
+    const visitCount = parseInt(localStorage.getItem('rutacuadrada_visits') || '0') + 1;
+    localStorage.setItem('rutacuadrada_visits', visitCount.toString());
+
+    const isIos = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+    const isInStandaloneMode = window.matchMedia('(display-mode: standalone)').matches;
+    const installDismissed = localStorage.getItem('rutacuadrada_install_dismissed');
+
+    if (!isInStandaloneMode && !installDismissed && visitCount >= 2) {
+      if (isIos) {
+        setShowIosBanner(true);
+      }
     }
   }, []);
 
-  // Estado del Formulario
+  // PWA: capturar evento beforeinstallprompt (Android/Desktop)
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      const installDismissed = localStorage.getItem('rutacuadrada_install_dismissed');
+      const visitCount = parseInt(localStorage.getItem('rutacuadrada_visits') || '0');
+      if (!installDismissed && visitCount >= 2) {
+        setShowInstallBanner(true);
+      }
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      setDeferredPrompt(null);
+    }
+    setShowInstallBanner(false);
+    localStorage.setItem('rutacuadrada_install_dismissed', 'true');
+  };
+
+  const dismissInstallBanner = () => {
+    setShowInstallBanner(false);
+    setShowIosBanner(false);
+    localStorage.setItem('rutacuadrada_install_dismissed', 'true');
+  };
+
+  // ===================== ESTADO DEL FORMULARIO =====================
   const [headerInfo, setHeaderInfo] = useState({
     date: new Date().toLocaleDateString('es-CL'),
     driverName: '',
@@ -69,7 +147,7 @@ export default function App() {
 
   const labels = { largo: 'Largo', medio: 'Medio', local: 'Local', estud: 'Estudiante', edad: '3ra Edad' };
 
-  // Cálculos en vivo
+  // ===================== CÁLCULOS EN VIVO =====================
   const getPassengers = (category, ticketData = tickets) => {
     const start = parseInt(ticketData[category].start) || 0;
     const end = parseInt(ticketData[category].end) || 0;
@@ -88,12 +166,27 @@ export default function App() {
 
   const formatMoney = (amount) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(Math.round(amount));
 
-  // Navegación y Flujo de Login
+  // ===================== LOGIN CON SESIÓN PERSISTENTE =====================
   const handleLogin = (e) => {
     e.preventDefault();
     if (userEmail.trim() !== '') {
       setIsLoggedIn(true);
-      localStorage.setItem('rutacuadrada_user', userEmail);
+
+      if (rememberMe) {
+        const expiry = new Date().getTime() + (30 * 24 * 60 * 60 * 1000); // 30 días
+        localStorage.setItem('rutacuadrada_session_expiry', expiry.toString());
+        localStorage.setItem('rutacuadrada_session_email', userEmail);
+      } else {
+        localStorage.setItem('rutacuadrada_user', userEmail);
+      }
+
+      // Cargar datos del conductor si existen
+      const driverData = localStorage.getItem(`rutacuadrada_driver_${userEmail}`);
+      if (driverData) {
+        const parsed = JSON.parse(driverData);
+        setHeaderInfo(prev => ({ ...prev, ...parsed }));
+      }
+
       setShowLogin(false);
       if (currentView === 'landing') setCurrentView('setup');
     }
@@ -102,7 +195,10 @@ export default function App() {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setUserEmail('');
+    setUserPassword('');
     localStorage.removeItem('rutacuadrada_user');
+    localStorage.removeItem('rutacuadrada_session_expiry');
+    localStorage.removeItem('rutacuadrada_session_email');
     setIsPanelOpen(false);
     setCurrentView('landing');
   };
@@ -121,7 +217,7 @@ export default function App() {
   };
 
   const handleNavigate = (view) => {
-    setIsPanelOpen(false); // Cierra el menú si estaba abierto
+    setIsPanelOpen(false);
     if (!isLoggedIn) {
       setShowLogin(true);
       return;
@@ -129,17 +225,36 @@ export default function App() {
     setCurrentView(view);
   };
 
+  // ===================== PRE-GUARDAR DATOS DEL CONDUCTOR =====================
+  const saveDriverData = (email, data) => {
+    const driverFields = {
+      driverName: data.driverName,
+      driverRut: data.driverRut,
+      company: data.company,
+      route: data.route,
+      plate: data.plate,
+      machineNum: data.machineNum,
+      garitaPhone: data.garitaPhone,
+    };
+    localStorage.setItem(`rutacuadrada_driver_${email}`, JSON.stringify(driverFields));
+  };
+
   const shareApp = () => {
     const text = "Estoy usando RutaCuadrada para el cuadre diario en segundos. Prueba Gratis Aquí: https://www.rutacuadrada.cl";
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
   };
 
-  // Guardar Liquidación
+  // ===================== GUARDAR LIQUIDACIÓN =====================
   const saveLiquidation = () => {
     if (trialCount >= 3) {
       setCurrentView('landing');
       setShowPaywall(true);
       return;
+    }
+
+    // Guardar datos del conductor para próximas sesiones
+    if (userEmail) {
+      saveDriverData(userEmail, headerInfo);
     }
 
     const newLiq = { 
@@ -172,6 +287,22 @@ export default function App() {
     window.scrollTo(0, 0);
   };
 
+  // ===================== RESETEAR Y VOLVER AL INICIO =====================
+  const resetAndExit = () => {
+    setTickets({
+      largo: { start: '', end: '' }, medio: { start: '', end: '' },
+      local: { start: '', end: '' }, estud: { start: '', end: '' },
+      edad:  { start: '', end: '' },
+    });
+    setLaps({ v1: false, v2: false, v3: false, v4: false });
+    setExpenses({ planilla: '', petroleo: '', limpieza: '', mantenciones: '', otros: '' });
+    setObservations('');
+    setShowSuccessModal(false);
+    setCurrentSavedLiq(null);
+    setCurrentView('landing');
+  };
+
+  // ===================== GENERAR REPORTE WHATSAPP =====================
   const generateReportText = (data) => {
     let ticketDetails = '';
     Object.keys(data.tickets).forEach(cat => {
@@ -182,15 +313,185 @@ export default function App() {
       }
     });
     if (!ticketDetails) ticketDetails = 'Sin boletos registrados\n';
-
     return `*RutaCuadrada - Reporte de Liquidación*\nFecha: ${data.date}\nConductor: ${data.driverName}\nVehículo: ${data.plate} - Maq: ${data.machineNum}\n\n-- DETALLE DE INGRESOS --\n${ticketDetails}\n*INGRESO TOTAL: ${formatMoney(data.totalIncome)}*\n\n-- GASTOS --\nPlanilla: ${formatMoney(data.expenses.planilla || 0)}\nPetróleo: ${formatMoney(data.expenses.petroleo || 0)}\nLimpieza: ${formatMoney(data.expenses.limpieza || 0)}\nMantenciones: ${formatMoney(data.expenses.mantenciones || 0)}\nOtros Gastos: ${formatMoney(data.expenses.otros || 0)}\nComisión Chofer: ${formatMoney(data.driverCommission || 0)}\n*TOTAL GASTOS: ${formatMoney(data.totalExpenses)}*\n\n-- SALDO A ENTREGAR --\n*${formatMoney(data.totalBalance)}*\n\nObservaciones: ${data.observations || 'Ninguna'}`;
+  };
+
+  // ===================== GENERAR PDF DESCARGABLE =====================
+  const generatePDF = async (liq) => {
+    setIsGeneratingPdf(true);
+    try {
+      const { default: jsPDF } = await import('jspdf');
+      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      
+      const pageW = 210;
+      const margin = 15;
+      let y = 20;
+
+      // Encabezado
+      doc.setFillColor(15, 23, 42);
+      doc.rect(0, 0, pageW, 30, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(18);
+      doc.setFont('helvetica', 'bold');
+      doc.text('LIQUIDACIÓN DE RUTA', pageW / 2, 13, { align: 'center' });
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text('RutaCuadrada - Menos Cuentas. Más Control.', pageW / 2, 22, { align: 'center' });
+      
+      y = 40;
+      doc.setTextColor(30, 30, 30);
+
+      // Datos del conductor
+      doc.setFillColor(248, 250, 252);
+      doc.rect(margin, y - 5, pageW - margin * 2, 28, 'F');
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'bold');
+      doc.text('DATOS DEL CONDUCTOR', margin + 2, y + 2);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(9);
+      doc.text(`Conductor: ${liq.driverName || '-'}`, margin + 2, y + 9);
+      doc.text(`RUT: ${liq.driverRut || '-'}`, margin + 2, y + 15);
+      doc.text(`Empresa: ${liq.company || '-'}`, pageW / 2, y + 9);
+      doc.text(`Recorrido: ${liq.route || '-'}`, pageW / 2, y + 15);
+      doc.text(`Patente: ${liq.plate || '-'}`, margin + 2, y + 21);
+      doc.text(`Máquina N°: ${liq.machineNum || '-'}`, pageW / 2, y + 21);
+      doc.text(`Fecha: ${liq.date}`, pageW - margin - 2, y + 2, { align: 'right' });
+
+      y += 35;
+
+      // Tabla de boletos
+      doc.setFillColor(15, 23, 42);
+      doc.rect(margin, y, pageW - margin * 2, 7, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'bold');
+      doc.text('BOLETO', margin + 2, y + 5);
+      doc.text('INICIO', margin + 45, y + 5);
+      doc.text('FIN', margin + 70, y + 5);
+      doc.text('PAX', margin + 95, y + 5);
+      doc.text('PRECIO', margin + 115, y + 5);
+      doc.text('TOTAL', margin + 145, y + 5);
+      y += 7;
+
+      doc.setTextColor(30, 30, 30);
+      doc.setFont('helvetica', 'normal');
+      let rowBg = false;
+      Object.keys(liq.tickets).forEach(cat => {
+        const pax = getPassengers(cat, liq.tickets);
+        const amount = getAmount(cat, liq.tickets, liq.ticketPrices);
+        if (rowBg) { doc.setFillColor(248, 250, 252); doc.rect(margin, y, pageW - margin * 2, 7, 'F'); }
+        rowBg = !rowBg;
+        doc.setFontSize(8);
+        doc.text(labels[cat], margin + 2, y + 5);
+        doc.text(liq.tickets[cat].start || '-', margin + 45, y + 5);
+        doc.text(liq.tickets[cat].end || '-', margin + 70, y + 5);
+        doc.text(pax.toString(), margin + 95, y + 5);
+        doc.text(`$${liq.ticketPrices[cat]}`, margin + 115, y + 5);
+        doc.text(formatMoney(amount), pageW - margin - 2, y + 5, { align: 'right' });
+        y += 7;
+      });
+
+      // Total ingresos
+      doc.setFillColor(209, 250, 229);
+      doc.rect(margin, y, pageW - margin * 2, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(6, 78, 59);
+      doc.text('TOTAL INGRESOS', margin + 2, y + 6);
+      doc.text(formatMoney(liq.totalIncome), pageW - margin - 2, y + 6, { align: 'right' });
+      y += 14;
+
+      // Gastos
+      doc.setTextColor(30, 30, 30);
+      doc.setFillColor(254, 226, 226);
+      doc.rect(margin, y, pageW - margin * 2, 7, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(8);
+      doc.setTextColor(127, 29, 29);
+      doc.text('GASTOS OPERATIVOS', margin + 2, y + 5);
+      y += 7;
+
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(30, 30, 30);
+      const gastosRows = [
+        ['Planilla', liq.expenses.planilla],
+        ['Petróleo', liq.expenses.petroleo],
+        ['Limpieza', liq.expenses.limpieza],
+        ['Mantenciones', liq.expenses.mantenciones],
+        ['Otros Gastos', liq.expenses.otros],
+        ['Comisión Conductor', liq.driverCommission],
+      ];
+      gastosRows.forEach(([label, val]) => {
+        doc.text(label, margin + 2, y + 5);
+        doc.text(formatMoney(parseInt(val) || 0), pageW - margin - 2, y + 5, { align: 'right' });
+        y += 6;
+      });
+
+      // Total gastos
+      doc.setFillColor(254, 226, 226);
+      doc.rect(margin, y, pageW - margin * 2, 8, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(9);
+      doc.setTextColor(127, 29, 29);
+      doc.text('TOTAL GASTOS', margin + 2, y + 6);
+      doc.text(formatMoney(liq.totalExpenses), pageW - margin - 2, y + 6, { align: 'right' });
+      y += 14;
+
+      // Saldo final
+      const saldoColor = liq.totalBalance >= 0 ? [6, 78, 59] : [127, 29, 29];
+      doc.setFillColor(15, 23, 42);
+      doc.rect(margin, y, pageW - margin * 2, 14, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text('SALDO A ENTREGAR', margin + 4, y + 9);
+      doc.setTextColor(...saldoColor);
+      doc.setFontSize(13);
+      doc.text(formatMoney(liq.totalBalance), pageW - margin - 2, y + 9, { align: 'right' });
+      y += 20;
+
+      // Observaciones
+      if (liq.observations) {
+        doc.setTextColor(30, 30, 30);
+        doc.setFontSize(8);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Observaciones:', margin, y);
+        doc.setFont('helvetica', 'normal');
+        const lines = doc.splitTextToSize(liq.observations, pageW - margin * 2);
+        doc.text(lines, margin, y + 6);
+        y += 6 + lines.length * 5;
+      }
+
+      // Pie de página
+      y = 285;
+      doc.setFontSize(7);
+      doc.setTextColor(150, 150, 150);
+      doc.text('Generado por RutaCuadrada (rutacuadrada.cl) - Menos Cuentas. Más Control.', pageW / 2, y, { align: 'center' });
+
+      const fileName = `RutaCuadrada_${liq.date.replace(/\//g, '-')}_Maq${liq.machineNum || '0'}.pdf`;
+
+      // Intentar compartir en móvil, si no descargar
+      if (navigator.share && navigator.canShare) {
+        const pdfBlob = doc.output('blob');
+        const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+        if (navigator.canShare({ files: [file] })) {
+          await navigator.share({ files: [file], title: 'Liquidación RutaCuadrada' });
+        } else {
+          doc.save(fileName);
+        }
+      } else {
+        doc.save(fileName);
+      }
+    } catch (err) {
+      console.error('Error generando PDF:', err);
+      alert('Error al generar el PDF. Por favor intenta de nuevo.');
+    }
+    setIsGeneratingPdf(false);
   };
 
   const handlePrintHistory = (liq) => {
     setCurrentSavedLiq(liq);
-    setTimeout(() => {
-      window.print();
-    }, 300);
+    setTimeout(() => generatePDF(liq), 300);
   };
 
   // ===================== VISTAS =====================
@@ -285,6 +586,49 @@ export default function App() {
           </div>
         </footer>
 
+        {/* Banner PWA Android/Desktop */}
+        {showInstallBanner && (
+          <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-emerald-500 p-4 flex items-center justify-between gap-3 z-[200] shadow-2xl">
+            <div className="flex items-center gap-3">
+              <BusFront className="text-emerald-400 shrink-0" size={28} />
+              <div>
+                <p className="text-white font-bold text-sm">Instala RutaCuadrada</p>
+                <p className="text-slate-400 text-xs">Agrégala a tu pantalla de inicio</p>
+              </div>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <button onClick={handleInstallApp} className="bg-emerald-500 text-slate-900 font-bold px-4 py-2 rounded-lg text-sm hover:bg-emerald-400">
+                Instalar
+              </button>
+              <button onClick={dismissInstallBanner} className="text-slate-400 hover:text-white px-2 py-2 text-lg">✕</button>
+            </div>
+          </div>
+        )}
+
+        {/* Banner PWA iOS */}
+        {showIosBanner && (
+          <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-emerald-500 p-4 z-[200] shadow-2xl">
+            <div className="flex justify-between items-start mb-3">
+              <p className="text-white font-bold text-sm flex items-center gap-2"><BusFront className="text-emerald-400" size={20}/> Instala RutaCuadrada en tu iPhone</p>
+              <button onClick={dismissInstallBanner} className="text-slate-400 hover:text-white text-lg leading-none">✕</button>
+            </div>
+            <div className="space-y-2 text-slate-300 text-xs">
+              <div className="flex items-center gap-2">
+                <span className="bg-slate-700 text-white rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px] shrink-0">1</span>
+                <span>Toca el botón <strong className="text-white">Compartir</strong> (⬆️) en la barra de Safari</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="bg-slate-700 text-white rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px] shrink-0">2</span>
+                <span>Selecciona <strong className="text-white">"Añadir a pantalla de inicio"</strong></span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="bg-slate-700 text-white rounded-full w-5 h-5 flex items-center justify-center font-bold text-[10px] shrink-0">3</span>
+                <span>Toca <strong className="text-white">Agregar</strong> para confirmar</span>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Modal de Login */}
         {showLogin && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[100] backdrop-blur-sm">
@@ -300,10 +644,27 @@ export default function App() {
                   type="email" 
                   required
                   placeholder="tu@correo.com" 
-                  className="w-full p-3 border-2 border-slate-200 rounded-xl mb-4 focus:border-emerald-500 outline-none transition-colors text-center font-medium"
+                  className="w-full p-3 border-2 border-slate-200 rounded-xl mb-3 focus:border-emerald-500 outline-none transition-colors text-center font-medium"
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.target.value)}
                 />
+                <input 
+                  type="password"
+                  placeholder="Contraseña (mínimo 4 caracteres)"
+                  className="w-full p-3 border-2 border-slate-200 rounded-xl mb-4 focus:border-emerald-500 outline-none transition-colors text-center font-medium"
+                  value={userPassword}
+                  onChange={(e) => setUserPassword(e.target.value)}
+                />
+                <div className="flex items-center justify-center gap-2 mb-4">
+                  <input 
+                    type="checkbox" 
+                    id="rememberMe" 
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="w-4 h-4 accent-emerald-500 cursor-pointer"
+                  />
+                  <label htmlFor="rememberMe" className="text-sm text-slate-600 cursor-pointer">Recordar sesión por 30 días</label>
+                </div>
                 <button type="submit" className="w-full bg-emerald-500 text-slate-900 font-bold py-3 rounded-xl hover:bg-emerald-400">
                   Comenzar
                 </button>
@@ -370,7 +731,6 @@ export default function App() {
             <p className="text-slate-500 text-sm mb-8">Ingresa los datos de tu ruta. Esto tomará solo 30 segundos.</p>
 
             <div className="space-y-6">
-              {/* Datos Personales y del Vehículo */}
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
                 <h3 className="font-bold text-slate-700 text-sm uppercase flex items-center gap-2"><User size={16}/> Conductor y Vehículo</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -383,7 +743,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Destino del Reporte */}
               <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 space-y-4">
                 <h3 className="font-bold text-blue-900 text-sm uppercase flex items-center gap-2"><Send size={16}/> Destino del Reporte</h3>
                 <div className="grid grid-cols-1 gap-4">
@@ -391,7 +750,6 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Valores de Boletos */}
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
                 <h3 className="font-bold text-slate-700 text-sm uppercase flex items-center gap-2"><TrendingDown size={16}/> Precios de Boletos del Día</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -406,7 +764,6 @@ export default function App() {
                   ))}
                 </div>
               </div>
-
             </div>
 
             <button onClick={() => setCurrentView('daily')} className="w-full mt-8 bg-slate-900 text-white py-4 rounded-xl font-black text-lg hover:bg-slate-800 transition-colors shadow-lg flex justify-center items-center gap-2">
@@ -423,7 +780,7 @@ export default function App() {
     return (
       <div className="min-h-screen bg-slate-100 p-2 md:p-6 font-sans print:bg-white print:p-0">
         
-        {/* Vista Imprimible (Solo visible al imprimir PDF o Reportes Históricos) */}
+        {/* Vista Imprimible */}
         <div className="hidden print:block w-full max-w-3xl mx-auto p-8 font-sans">
           {currentSavedLiq && (
             <div className="space-y-6">
@@ -512,7 +869,7 @@ export default function App() {
           )}
         </div>
 
-        {/* Interfaz Principal de la App (Visible en Pantalla) */}
+        {/* Interfaz Principal */}
         <div className="print:hidden max-w-3xl mx-auto space-y-4 relative pb-20">
           
           <div className="flex justify-between items-center px-2">
@@ -520,7 +877,6 @@ export default function App() {
             <span className="text-xs font-bold text-slate-400">{headerInfo.date}</span>
           </div>
 
-          {/* Tarjeta de Identificación Minimalista */}
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
             <div>
               <p className="font-black text-slate-800">{headerInfo.driverName || 'Conductor'}</p>
@@ -650,7 +1006,7 @@ export default function App() {
             </button>
           </div>
 
-          {/* BOTON NEON - WHATSAPP DIRECTO */}
+          {/* BOTON NEON - WHATSAPP */}
           <button 
             onClick={shareApp}
             className="fixed bottom-6 right-6 px-6 py-3 rounded-full border border-green-500 text-green-400 bg-slate-900 shadow-[0_0_15px_rgba(34,197,94,0.6)] hover:shadow-[0_0_25px_rgba(34,197,94,0.8)] transition-all z-50 font-bold flex items-center gap-2"
@@ -659,7 +1015,7 @@ export default function App() {
           </button>
         </div>
 
-        {/* MODAL DE ÉXITO Y ENVÍO SEGURO (SOLO WHATSAPP) */}
+        {/* MODAL DE ÉXITO */}
         {showSuccessModal && (
           <div className="fixed inset-0 bg-slate-900/90 flex items-center justify-center p-4 z-[100] backdrop-blur-sm print:hidden">
             <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl">
@@ -671,8 +1027,8 @@ export default function App() {
                 <p className="text-emerald-100 text-sm mt-1">El reporte está seguro en tu historial.</p>
               </div>
               
-              <div className="p-6 space-y-4">
-                <p className="text-center text-slate-600 text-sm font-medium mb-4">Envía este reporte a la garita rápidamente:</p>
+              <div className="p-6 space-y-3">
+                <p className="text-center text-slate-600 text-sm font-medium mb-2">Envía o descarga tu reporte:</p>
                 
                 <a 
                   href={`https://wa.me/${headerInfo.garitaPhone.replace(/\+/g, '')}?text=${encodeURIComponent(generateReportText(currentSavedLiq))}`}
@@ -682,9 +1038,24 @@ export default function App() {
                   <MessageCircle size={24} /> Enviar por WhatsApp
                 </a>
 
+                <button
+                  onClick={() => currentSavedLiq && generatePDF(currentSavedLiq)}
+                  disabled={isGeneratingPdf}
+                  className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 text-lg shadow-md transition-transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Download size={24} /> {isGeneratingPdf ? 'Generando PDF...' : 'Descargar PDF'}
+                </button>
+
+                <button 
+                  onClick={resetAndExit}
+                  className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 text-base shadow-md transition-colors"
+                >
+                  ✓ Finalizar y Volver al Inicio
+                </button>
+
                 <button 
                   onClick={() => { setShowSuccessModal(false); setCurrentView('landing'); }}
-                  className="w-full pt-4 text-slate-400 font-bold hover:text-slate-600 text-sm underline"
+                  className="w-full pt-2 text-slate-400 font-bold hover:text-slate-600 text-sm underline"
                 >
                   Volver al Inicio
                 </button>
@@ -701,17 +1072,14 @@ export default function App() {
     const groupedStats = liquidations.reduce((acc, liq) => {
       const month = liq.monthYear || 'Mes Desconocido';
       if (!acc[month]) acc[month] = { driver: 0, company: 0, pax: 0, laps: 0 };
-      
       acc[month].driver += liq.driverCommission || 0;
       acc[month].company += liq.totalBalance || 0;
-      
       Object.keys(liq.tickets || {}).forEach(cat => {
         const start = parseInt(liq.tickets[cat].start) || 0;
         const end = parseInt(liq.tickets[cat].end) || 0;
         acc[month].pax += (end - start > 0 ? end - start : 0);
       });
       acc[month].laps += Object.values(liq.laps || {}).filter(Boolean).length;
-      
       return acc;
     }, {});
 
@@ -803,9 +1171,10 @@ export default function App() {
                       <div className="flex gap-2">
                         <button 
                           onClick={() => handlePrintHistory(liq)}
-                          className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-lg text-sm flex items-center gap-2"
+                          disabled={isGeneratingPdf}
+                          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-sm flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                          <Download size={16}/> Descargar PDF
+                          <Download size={16}/> {isGeneratingPdf ? 'Generando...' : 'Descargar PDF'}
                         </button>
                       </div>
                     </div>
@@ -836,9 +1205,7 @@ export default function App() {
             </h1>
             
             <div className="space-y-6 text-slate-600 leading-relaxed text-sm">
-              <p>
-                En <strong>RutaCuadrada</strong>, estamos comprometidos con la protección y el manejo responsable de la información generada por nuestros usuarios (conductores y empresas de transporte).
-              </p>
+              <p>En <strong>RutaCuadrada</strong>, estamos comprometidos con la protección y el manejo responsable de la información generada por nuestros usuarios (conductores y empresas de transporte).</p>
               <h2 className="text-lg font-bold text-slate-800">1. Confidencialidad de los Datos</h2>
               <p>Los datos ingresados en la plataforma son estrictamente confidenciales y se almacenan localmente en el dispositivo del usuario.</p>
               <h2 className="text-lg font-bold text-slate-800">2. Veracidad y Responsabilidad</h2>
