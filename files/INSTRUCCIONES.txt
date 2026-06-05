@@ -1,0 +1,45 @@
+=== TAREA 1: Agregar en index.html dentro del <head> ===
+
+Busca esta línea en tu index.html:
+    <title>RutaCuadrada - Menos Cuentas. Más Control.</title>
+
+Y ANTES de ella pega este bloque:
+
+    <meta name="description" content="RutaCuadrada es el software de liquidación de buses y cuadratura de boletos para conductores y empresas de transporte público en Chile. Rápido, digital y sin papel." />
+    <meta name="keywords" content="liquidación de buses Chile, cuadratura de boletos, planilla de conductores, control de flota, software transporte público Chile, reducción de papel transporte, liquidación conductor bus, rendición diaria bus" />
+    <meta name="author" content="RutaCuadrada" />
+    <meta property="og:title" content="RutaCuadrada - Liquidación de Buses Sin Errores" />
+    <meta property="og:description" content="Calcula tu liquidación diaria en segundos. Diseñado para conductores de buses en Chile." />
+    <meta property="og:url" content="https://www.rutacuadrada.cl" />
+    <meta property="og:type" content="website" />
+
+
+=== TAREA 2: Reemplazar el <footer> en App.jsx ===
+
+Busca este bloque en App.jsx (vista landing):
+
+        <footer className="bg-slate-950 text-slate-400 p-8 text-center text-xs space-y-2 relative z-10">
+          <p className="font-bold text-sm text-slate-300">RutaCuadrada - Menos Cuentas. Más Control.</p>
+          <p>© 2026 RutaCuadrada. Todos los derechos reservados.</p>
+          <p>Soporte y Ventas: <a href="mailto:movingexpresschile@gmail.com" className="text-emerald-500">movingexpresschile@gmail.com</a></p>
+          <div className="pt-4 border-t border-slate-800 flex justify-center gap-4">
+            <button onClick={() => setCurrentView('privacy')} className="hover:text-slate-200 cursor-pointer transition-colors">Política de Privacidad</button>
+            <span>|</span>
+            <button onClick={() => setCurrentView('terms')} className="hover:text-slate-200 cursor-pointer transition-colors">Términos de Servicio</button>
+          </div>
+        </footer>
+
+Y REEMPLÁZALO por este:
+
+        <footer className="bg-slate-950 text-slate-400 p-8 text-center text-xs space-y-2 relative z-10">
+          <p className="font-bold text-sm text-slate-300">RutaCuadrada - Menos Cuentas. Más Control.</p>
+          <p>© 2026 RutaCuadrada. Todos los derechos reservados.</p>
+          <p>Soporte y Ventas: <a href="mailto:movingexpresschile@gmail.com" className="text-emerald-500">movingexpresschile@gmail.com</a></p>
+          <div className="pt-4 border-t border-slate-800 flex justify-center gap-4 flex-wrap">
+            <button onClick={() => setCurrentView('terms')} className="hover:text-slate-200 cursor-pointer transition-colors">Términos de Servicio</button>
+            <span>|</span>
+            <a href="/nuestra-razon.html" className="hover:text-slate-200 cursor-pointer transition-colors">Nuestra Razón</a>
+            <span>|</span>
+            <a href="/articulos.html" className="hover:text-slate-200 cursor-pointer transition-colors">Artículos</a>
+          </div>
+        </footer>

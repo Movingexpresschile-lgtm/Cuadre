@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  BusFront, FileText, TrendingDown, ShieldCheck, 
-  CheckCircle2, ChevronRight, Lock, 
+import {
+  BusFront, FileText, TrendingDown, ShieldCheck,
+  CheckCircle2, ChevronRight, Lock,
   BarChart3, LogIn, User, Send, MessageCircle, Calendar, Filter, LogOut, Download
 } from 'lucide-react';
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('landing'); 
+  const [currentView, setCurrentView] = useState('landing');
   const [showPaywall, setShowPaywall] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [userEmail, setUserEmail] = useState('');
@@ -14,9 +14,9 @@ export default function App() {
   const [rememberMe, setRememberMe] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
-  
+
   const [liquidations, setLiquidations] = useState([]);
-  const [trialCount, setTrialCount] = useState(0); 
+  const [trialCount, setTrialCount] = useState(0);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentSavedLiq, setCurrentSavedLiq] = useState(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
@@ -64,7 +64,7 @@ export default function App() {
         setIsLoggedIn(true);
       }
     }
-    
+
     if (saved) {
       const parsed = JSON.parse(saved);
       setLiquidations(parsed);
@@ -137,7 +137,7 @@ export default function App() {
   const [tickets, setTickets] = useState({
     largo: { start: '', end: '' }, medio: { start: '', end: '' },
     local: { start: '', end: '' }, estud: { start: '', end: '' },
-    edad:  { start: '', end: '' },
+    edad: { start: '', end: '' },
   });
 
   const [laps, setLaps] = useState({ v1: false, v2: false, v3: false, v4: false });
@@ -155,12 +155,12 @@ export default function App() {
   };
 
   const getAmount = (category, ticketData = tickets, prices = ticketPrices) => getPassengers(category, ticketData) * prices[category];
-  
+
   const totalIncome = Object.keys(ticketPrices).reduce((acc, cat) => acc + getAmount(cat), 0);
   const driverCommission = totalIncome * (commissionPercent / 100);
-  
+
   const getExpenseValue = (field, expData = expenses) => parseInt(expData[field]) || 0;
-  
+
   const totalExpenses = getExpenseValue('planilla') + getExpenseValue('petroleo') + getExpenseValue('limpieza') + getExpenseValue('mantenciones') + getExpenseValue('otros') + driverCommission;
   const totalBalance = totalIncome - totalExpenses;
 
@@ -204,15 +204,15 @@ export default function App() {
   };
 
   const handleStartApp = () => {
-    if (!isLoggedIn) { 
-      setShowLogin(true); 
-      return; 
+    if (!isLoggedIn) {
+      setShowLogin(true);
+      return;
     }
-    if (trialCount >= 3) { 
+    if (trialCount >= 3) {
       setCurrentView('landing');
-      setShowPaywall(true); 
-    } else { 
-      setCurrentView('setup'); 
+      setShowPaywall(true);
+    } else {
+      setCurrentView('setup');
     }
   };
 
@@ -257,31 +257,31 @@ export default function App() {
       saveDriverData(userEmail, headerInfo);
     }
 
-    const newLiq = { 
-      id: Date.now(), 
-      ...headerInfo, 
-      tickets, 
-      ticketPrices, 
-      laps, 
-      expenses, 
-      observations, 
-      driverCommission, 
-      totalIncome, 
-      totalExpenses, 
+    const newLiq = {
+      id: Date.now(),
+      ...headerInfo,
+      tickets,
+      ticketPrices,
+      laps,
+      expenses,
+      observations,
+      driverCommission,
+      totalIncome,
+      totalExpenses,
       totalBalance,
       monthYear: new Date().toLocaleDateString('es-CL', { month: 'long', year: 'numeric' })
     };
-    
+
     const newHistory = [newLiq, ...liquidations];
     setLiquidations(newHistory);
     localStorage.setItem('rutacuadrada_history', JSON.stringify(newHistory));
-    
+
     const newCount = trialCount + 1;
     setTrialCount(newCount);
     localStorage.setItem('rutacuadrada_trial_count', newCount.toString());
-    
+
     if (!selectedStatMonth) setSelectedStatMonth(newLiq.monthYear);
-    
+
     setCurrentSavedLiq(newLiq);
     setShowSuccessModal(true);
     window.scrollTo(0, 0);
@@ -292,7 +292,7 @@ export default function App() {
     setTickets({
       largo: { start: '', end: '' }, medio: { start: '', end: '' },
       local: { start: '', end: '' }, estud: { start: '', end: '' },
-      edad:  { start: '', end: '' },
+      edad: { start: '', end: '' },
     });
     setLaps({ v1: false, v2: false, v3: false, v4: false });
     setExpenses({ planilla: '', petroleo: '', limpieza: '', mantenciones: '', otros: '' });
@@ -322,7 +322,7 @@ export default function App() {
     try {
       const { default: jsPDF } = await import('jspdf');
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      
+
       const pageW = 210;
       const margin = 15;
       let y = 20;
@@ -337,7 +337,7 @@ export default function App() {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text('RutaCuadrada - Menos Cuentas. Más Control.', pageW / 2, 22, { align: 'center' });
-      
+
       y = 40;
       doc.setTextColor(30, 30, 30);
 
@@ -502,33 +502,33 @@ export default function App() {
         {/* Nav */}
         <nav className="bg-slate-900 text-white p-4 flex justify-between items-center px-4 md:px-12 z-50 sticky top-0">
           <div className="flex flex-col">
-            <span className="text-xl font-bold tracking-wide flex items-center gap-2"><BusFront className="text-emerald-400"/> RutaCuadrada</span>
+            <span className="text-xl font-bold tracking-wide flex items-center gap-2"><BusFront className="text-emerald-400" /> RutaCuadrada</span>
             <span className="text-[11px] italic text-emerald-400 font-light tracking-wider">Menos Cuentas. Más Control.</span>
           </div>
           {isLoggedIn ? (
             <div className="relative">
-              <button 
-                onClick={() => setIsPanelOpen(!isPanelOpen)} 
+              <button
+                onClick={() => setIsPanelOpen(!isPanelOpen)}
                 className="flex items-center gap-2 text-sm font-semibold text-emerald-400 bg-slate-800 px-4 py-2 rounded-full hover:bg-slate-700 transition-colors"
               >
                 <User size={16} /> Mi Panel
               </button>
               {isPanelOpen && (
                 <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 border border-slate-100 z-50 overflow-hidden">
-                   <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 mb-1">
-                     <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Sesión Activa</p>
-                     <p className="text-sm font-bold text-slate-700 truncate">{userEmail}</p>
-                   </div>
-                   <button onClick={() => handleNavigate('stats')} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 flex items-center gap-2">
-                     <BarChart3 size={16} /> Mis Estadísticas
-                   </button>
-                   <button onClick={() => handleNavigate('reports')} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2">
-                     <FileText size={16} /> Mis Reportes PDF
-                   </button>
-                   <div className="border-t border-slate-100 mt-1"></div>
-                   <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2">
-                     <LogOut size={16} /> Cerrar Sesión
-                   </button>
+                  <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 mb-1">
+                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Sesión Activa</p>
+                    <p className="text-sm font-bold text-slate-700 truncate">{userEmail}</p>
+                  </div>
+                  <button onClick={() => handleNavigate('stats')} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 flex items-center gap-2">
+                    <BarChart3 size={16} /> Mis Estadísticas
+                  </button>
+                  <button onClick={() => handleNavigate('reports')} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2">
+                    <FileText size={16} /> Mis Reportes PDF
+                  </button>
+                  <div className="border-t border-slate-100 mt-1"></div>
+                  <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2">
+                    <LogOut size={16} /> Cerrar Sesión
+                  </button>
                 </div>
               )}
             </div>
@@ -541,22 +541,22 @@ export default function App() {
         <header className="bg-slate-900 text-white pt-16 pb-24 px-4 text-center overflow-hidden relative flex-grow flex flex-col justify-center">
           <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1544620347-c4fd6a3d5957?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center" />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 to-slate-900" />
-          
+
           <div className="max-w-4xl mx-auto space-y-8 relative z-10">
             <div className="flex justify-center">
-              <button 
-                 onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
-                 className="inline-flex flex-col items-center bg-red-600 text-white font-black px-8 py-3 rounded-2xl animate-pulse shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border border-red-400 cursor-pointer">
+              <button
+                onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
+                className="inline-flex flex-col items-center bg-red-600 text-white font-black px-8 py-3 rounded-2xl animate-pulse shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border border-red-400 cursor-pointer">
                 <span className="text-sm md:text-lg tracking-wide">⚡ OFERTA CYBER: 75% DESCUENTO ⚡</span>
                 <span className="text-xs md:text-sm font-medium mt-1 text-red-100">Adquiere tu licencia de por vida</span>
               </button>
             </div>
-            
+
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight mt-6 text-white drop-shadow-md">
-              Cuadra tu bus,<br/>
+              Cuadra tu bus,<br />
               <span className="text-emerald-400 block mt-2">Sin Errores.</span>
             </h1>
-            
+
             <div className="mt-8">
               <button onClick={handleStartApp} className="bg-emerald-500 text-slate-900 font-black text-xl py-5 px-12 rounded-full hover:bg-emerald-400 transition-transform transform hover:scale-105 shadow-[0_10px_30px_rgba(16,185,129,0.3)]">
                 Iniciar mis cálculos <ChevronRight className="inline" size={24} />
@@ -574,15 +574,16 @@ export default function App() {
           </div>
         </header>
 
-        {/* Footer */}
         <footer className="bg-slate-950 text-slate-400 p-8 text-center text-xs space-y-2 relative z-10">
           <p className="font-bold text-sm text-slate-300">RutaCuadrada - Menos Cuentas. Más Control.</p>
           <p>© 2026 RutaCuadrada. Todos los derechos reservados.</p>
           <p>Soporte y Ventas: <a href="mailto:movingexpresschile@gmail.com" className="text-emerald-500">movingexpresschile@gmail.com</a></p>
-          <div className="pt-4 border-t border-slate-800 flex justify-center gap-4">
-            <button onClick={() => setCurrentView('privacy')} className="hover:text-slate-200 cursor-pointer transition-colors">Política de Privacidad</button>
-            <span>|</span>
+          <div className="pt-4 border-t border-slate-800 flex justify-center gap-4 flex-wrap">
             <button onClick={() => setCurrentView('terms')} className="hover:text-slate-200 cursor-pointer transition-colors">Términos de Servicio</button>
+            <span>|</span>
+            <a href="/nuestra-razon.html" className="hover:text-slate-200 cursor-pointer transition-colors">Nuestra Razón</a>
+            <span>|</span>
+            <a href="/articulos.html" className="hover:text-slate-200 cursor-pointer transition-colors">Artículos</a>
           </div>
         </footer>
 
@@ -609,7 +610,7 @@ export default function App() {
         {showIosBanner && (
           <div className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-emerald-500 p-4 z-[200] shadow-2xl">
             <div className="flex justify-between items-start mb-3">
-              <p className="text-white font-bold text-sm flex items-center gap-2"><BusFront className="text-emerald-400" size={20}/> Instala RutaCuadrada en tu iPhone</p>
+              <p className="text-white font-bold text-sm flex items-center gap-2"><BusFront className="text-emerald-400" size={20} /> Instala RutaCuadrada en tu iPhone</p>
               <button onClick={dismissInstallBanner} className="text-slate-400 hover:text-white text-lg leading-none">✕</button>
             </div>
             <div className="space-y-2 text-slate-300 text-xs">
@@ -640,15 +641,15 @@ export default function App() {
               <h2 className="text-2xl font-black text-slate-800 mb-2">Crea tu cuenta</h2>
               <p className="text-slate-500 text-sm mb-6">Ingresa tu correo para guardar tu historial y acceder a tus 3 pruebas gratuitas.</p>
               <form onSubmit={handleLogin}>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   required
-                  placeholder="tu@correo.com" 
+                  placeholder="tu@correo.com"
                   className="w-full p-3 border-2 border-slate-200 rounded-xl mb-3 focus:border-emerald-500 outline-none transition-colors text-center font-medium"
                   value={userEmail}
                   onChange={(e) => setUserEmail(e.target.value)}
                 />
-                <input 
+                <input
                   type="password"
                   placeholder="Contraseña (mínimo 4 caracteres)"
                   className="w-full p-3 border-2 border-slate-200 rounded-xl mb-4 focus:border-emerald-500 outline-none transition-colors text-center font-medium"
@@ -656,9 +657,9 @@ export default function App() {
                   onChange={(e) => setUserPassword(e.target.value)}
                 />
                 <div className="flex items-center justify-center gap-2 mb-4">
-                  <input 
-                    type="checkbox" 
-                    id="rememberMe" 
+                  <input
+                    type="checkbox"
+                    id="rememberMe"
                     checked={rememberMe}
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="w-4 h-4 accent-emerald-500 cursor-pointer"
@@ -696,7 +697,7 @@ export default function App() {
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pago Único - Licencia Permanente</p>
                 </div>
                 <div className="space-y-3">
-                  <button 
+                  <button
                     onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
                     className="block w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
                   >
@@ -732,33 +733,33 @@ export default function App() {
 
             <div className="space-y-6">
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
-                <h3 className="font-bold text-slate-700 text-sm uppercase flex items-center gap-2"><User size={16}/> Conductor y Vehículo</h3>
+                <h3 className="font-bold text-slate-700 text-sm uppercase flex items-center gap-2"><User size={16} /> Conductor y Vehículo</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder="Nombre del Conductor" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.driverName} onChange={e => setHeaderInfo({...headerInfo, driverName: e.target.value})} />
-                  <input type="text" placeholder="RUT (Ej: 15.123.456-7)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.driverRut} onChange={e => setHeaderInfo({...headerInfo, driverRut: e.target.value})} />
-                  <input type="text" placeholder="Empresa (Opcional - Ej: Ruta Lampa)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.company} onChange={e => setHeaderInfo({...headerInfo, company: e.target.value})} />
-                  <input type="text" placeholder="Recorrido (Opcional - Ej: Stgo-Centro)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.route} onChange={e => setHeaderInfo({...headerInfo, route: e.target.value})} />
-                  <input type="text" placeholder="Nº Patente" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.plate} onChange={e => setHeaderInfo({...headerInfo, plate: e.target.value})} />
-                  <input type="text" placeholder="Nº Máquina Interno" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.machineNum} onChange={e => setHeaderInfo({...headerInfo, machineNum: e.target.value})} />
+                  <input type="text" placeholder="Nombre del Conductor" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.driverName} onChange={e => setHeaderInfo({ ...headerInfo, driverName: e.target.value })} />
+                  <input type="text" placeholder="RUT (Ej: 15.123.456-7)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.driverRut} onChange={e => setHeaderInfo({ ...headerInfo, driverRut: e.target.value })} />
+                  <input type="text" placeholder="Empresa (Opcional - Ej: Ruta Lampa)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.company} onChange={e => setHeaderInfo({ ...headerInfo, company: e.target.value })} />
+                  <input type="text" placeholder="Recorrido (Opcional - Ej: Stgo-Centro)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.route} onChange={e => setHeaderInfo({ ...headerInfo, route: e.target.value })} />
+                  <input type="text" placeholder="Nº Patente" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.plate} onChange={e => setHeaderInfo({ ...headerInfo, plate: e.target.value })} />
+                  <input type="text" placeholder="Nº Máquina Interno" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.machineNum} onChange={e => setHeaderInfo({ ...headerInfo, machineNum: e.target.value })} />
                 </div>
               </div>
 
               <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 space-y-4">
-                <h3 className="font-bold text-blue-900 text-sm uppercase flex items-center gap-2"><Send size={16}/> Destino del Reporte</h3>
+                <h3 className="font-bold text-blue-900 text-sm uppercase flex items-center gap-2"><Send size={16} /> Destino del Reporte</h3>
                 <div className="grid grid-cols-1 gap-4">
-                  <input type="tel" placeholder="WhatsApp de la Garita o Dueño (+569...)" className="w-full p-3 border border-blue-200 rounded-xl outline-none focus:border-blue-500 font-medium" value={headerInfo.garitaPhone} onChange={e => setHeaderInfo({...headerInfo, garitaPhone: e.target.value})} />
+                  <input type="tel" placeholder="WhatsApp de la Garita o Dueño (+569...)" className="w-full p-3 border border-blue-200 rounded-xl outline-none focus:border-blue-500 font-medium" value={headerInfo.garitaPhone} onChange={e => setHeaderInfo({ ...headerInfo, garitaPhone: e.target.value })} />
                 </div>
               </div>
 
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
-                <h3 className="font-bold text-slate-700 text-sm uppercase flex items-center gap-2"><TrendingDown size={16}/> Precios de Boletos del Día</h3>
+                <h3 className="font-bold text-slate-700 text-sm uppercase flex items-center gap-2"><TrendingDown size={16} /> Precios de Boletos del Día</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {Object.keys(ticketPrices).map(cat => (
                     <div key={cat}>
                       <label className="text-xs text-slate-500 font-medium mb-1 block">{labels[cat]}</label>
                       <div className="relative">
                         <span className="absolute left-3 top-3 text-slate-400 font-medium">$</span>
-                        <input type="number" className="w-full p-3 pl-7 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 font-bold text-slate-700" value={ticketPrices[cat]} onChange={(e) => setTicketPrices({...ticketPrices, [cat]: parseInt(e.target.value) || 0})} />
+                        <input type="number" className="w-full p-3 pl-7 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 font-bold text-slate-700" value={ticketPrices[cat]} onChange={(e) => setTicketPrices({ ...ticketPrices, [cat]: parseInt(e.target.value) || 0 })} />
                       </div>
                     </div>
                   ))}
@@ -779,7 +780,7 @@ export default function App() {
   if (currentView === 'daily') {
     return (
       <div className="min-h-screen bg-slate-100 p-2 md:p-6 font-sans print:bg-white print:p-0">
-        
+
         {/* Vista Imprimible */}
         <div className="hidden print:block w-full max-w-3xl mx-auto p-8 font-sans">
           {currentSavedLiq && (
@@ -831,7 +832,7 @@ export default function App() {
                   <div className="flex gap-2">
                     {['v1', 'v2', 'v3', 'v4'].map((v, i) => (
                       <span key={v} className={`px-2 py-1 border rounded ${currentSavedLiq.laps[v] ? 'bg-slate-200 font-bold' : 'text-slate-300'}`}>
-                        V{i+1} {currentSavedLiq.laps[v] ? '✓' : ''}
+                        V{i + 1} {currentSavedLiq.laps[v] ? '✓' : ''}
                       </span>
                     ))}
                   </div>
@@ -871,7 +872,7 @@ export default function App() {
 
         {/* Interfaz Principal */}
         <div className="print:hidden max-w-3xl mx-auto space-y-4 relative pb-20">
-          
+
           <div className="flex justify-between items-center px-2">
             <button onClick={() => setCurrentView('setup')} className="text-slate-500 hover:text-slate-800 text-sm font-bold flex items-center gap-1">← Atrás</button>
             <span className="text-xs font-bold text-slate-400">{headerInfo.date}</span>
@@ -893,13 +894,13 @@ export default function App() {
             <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Marcador de Vueltas Registradas</h3>
             <div className="grid grid-cols-4 gap-2">
               {['v1', 'v2', 'v3', 'v4'].map((v, i) => (
-                <button 
+                <button
                   key={v}
-                  onClick={() => setLaps({...laps, [v]: !laps[v]})}
+                  onClick={() => setLaps({ ...laps, [v]: !laps[v] })}
                   className={`py-2 rounded-xl border-2 font-black transition-all ${laps[v] ? 'bg-emerald-100 border-emerald-500 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-400'}`}
                 >
                   {laps[v] && <CheckCircle2 size={16} className="inline mr-1" />}
-                  V{i+1}
+                  V{i + 1}
                 </button>
               ))}
             </div>
@@ -908,19 +909,19 @@ export default function App() {
           {/* Ingresos por Boletos */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-slate-900 text-white p-3 font-bold flex justify-between items-center">
-              <span className="flex items-center gap-2"><FileText size={18}/> Boletos Cortados</span>
+              <span className="flex items-center gap-2"><FileText size={18} /> Boletos Cortados</span>
               <span className="text-xs bg-emerald-500 text-slate-900 px-2 py-1 rounded font-black">FASE 2</span>
             </div>
-            
+
             <div className="p-4 space-y-4">
               {Object.keys(ticketPrices).map((cat) => (
                 <div key={cat} className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-100">
                   <div className="col-span-12 sm:col-span-2 font-bold text-slate-700">{labels[cat]}</div>
                   <div className="col-span-4 sm:col-span-3">
-                    <input type="number" placeholder="Inicio" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-emerald-500 font-mono text-sm" value={tickets[cat].start} onChange={(e) => setTickets({...tickets, [cat]: {...tickets[cat], start: e.target.value}})} />
+                    <input type="number" placeholder="Inicio" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-emerald-500 font-mono text-sm" value={tickets[cat].start} onChange={(e) => setTickets({ ...tickets, [cat]: { ...tickets[cat], start: e.target.value } })} />
                   </div>
                   <div className="col-span-4 sm:col-span-3">
-                    <input type="number" placeholder="Fin" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-emerald-500 font-mono text-sm" value={tickets[cat].end} onChange={(e) => setTickets({...tickets, [cat]: {...tickets[cat], end: e.target.value}})} />
+                    <input type="number" placeholder="Fin" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-emerald-500 font-mono text-sm" value={tickets[cat].end} onChange={(e) => setTickets({ ...tickets, [cat]: { ...tickets[cat], end: e.target.value } })} />
                   </div>
                   <div className="col-span-4 sm:col-span-2 text-center bg-slate-200 rounded-lg py-1.5 font-bold text-slate-600 text-sm">
                     {getPassengers(cat)} <span className="text-[10px] uppercase block -mt-1">Pax</span>
@@ -932,7 +933,7 @@ export default function App() {
                 </div>
               ))}
             </div>
-            
+
             <div className="bg-emerald-50 p-4 border-t border-emerald-100 flex justify-between items-center">
               <span className="font-black text-emerald-900">INGRESO TOTAL</span>
               <span className="text-2xl font-black text-emerald-700">{formatMoney(totalIncome)}</span>
@@ -942,7 +943,7 @@ export default function App() {
           {/* Gastos y Comisión */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-red-500 text-white p-3 font-bold flex items-center gap-2">
-              <TrendingDown size={18}/> Gastos Operativos
+              <TrendingDown size={18} /> Gastos Operativos
             </div>
             <div className="p-4 space-y-3">
               {[
@@ -956,7 +957,7 @@ export default function App() {
                   <label className="font-medium text-slate-700 text-sm">{expense.label}</label>
                   <div className="relative w-32">
                     <span className="absolute left-3 top-2 text-slate-400 text-sm">$</span>
-                    <input type="number" className="w-full p-2 pl-6 text-right border border-slate-300 rounded-lg outline-none focus:border-red-500 font-mono text-sm" placeholder="0" value={expenses[expense.id]} onChange={(e) => setExpenses({...expenses, [expense.id]: e.target.value})} />
+                    <input type="number" className="w-full p-2 pl-6 text-right border border-slate-300 rounded-lg outline-none focus:border-red-500 font-mono text-sm" placeholder="0" value={expenses[expense.id]} onChange={(e) => setExpenses({ ...expenses, [expense.id]: e.target.value })} />
                   </div>
                 </div>
               ))}
@@ -965,7 +966,7 @@ export default function App() {
                 <div>
                   <label className="font-bold text-blue-900 text-sm flex items-center gap-2">Comisión Conductor</label>
                   <div className="flex items-center gap-1 mt-1">
-                    <input type="number" className="w-12 p-1 text-center border border-blue-200 rounded text-xs outline-none" value={commissionPercent} onChange={e => setCommissionPercent(parseInt(e.target.value)||0)} />
+                    <input type="number" className="w-12 p-1 text-center border border-blue-200 rounded text-xs outline-none" value={commissionPercent} onChange={e => setCommissionPercent(parseInt(e.target.value) || 0)} />
                     <span className="text-xs text-blue-700 font-bold">% del Ingreso</span>
                   </div>
                 </div>
@@ -983,10 +984,10 @@ export default function App() {
 
           {/* Observaciones */}
           <div className="bg-yellow-50 rounded-2xl shadow-sm border border-yellow-200 p-4">
-            <label className="font-bold text-yellow-900 text-sm flex items-center gap-2 mb-2"><MessageCircle size={16}/> Observaciones y Notas</label>
-            <textarea 
-              className="w-full p-3 border border-yellow-300 rounded-xl outline-none focus:border-yellow-500 bg-white text-sm resize-none" 
-              rows="3" 
+            <label className="font-bold text-yellow-900 text-sm flex items-center gap-2 mb-2"><MessageCircle size={16} /> Observaciones y Notas</label>
+            <textarea
+              className="w-full p-3 border border-yellow-300 rounded-xl outline-none focus:border-yellow-500 bg-white text-sm resize-none"
+              rows="3"
               placeholder="Ej: Desvío en ruta por accidente, compra de aditivo, etc."
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
@@ -1007,7 +1008,7 @@ export default function App() {
           </div>
 
           {/* BOTON NEON - WHATSAPP */}
-          <button 
+          <button
             onClick={shareApp}
             className="fixed bottom-6 right-6 px-6 py-3 rounded-full border border-green-500 text-green-400 bg-slate-900 shadow-[0_0_15px_rgba(34,197,94,0.6)] hover:shadow-[0_0_25px_rgba(34,197,94,0.8)] transition-all z-50 font-bold flex items-center gap-2"
           >
@@ -1026,11 +1027,11 @@ export default function App() {
                 <h2 className="text-2xl font-black text-white tracking-tight">¡Cálculo Guardado!</h2>
                 <p className="text-emerald-100 text-sm mt-1">El reporte está seguro en tu historial.</p>
               </div>
-              
+
               <div className="p-6 space-y-3">
                 <p className="text-center text-slate-600 text-sm font-medium mb-2">Envía o descarga tu reporte:</p>
-                
-                <a 
+
+                <a
                   href={`https://wa.me/${headerInfo.garitaPhone.replace(/\+/g, '')}?text=${encodeURIComponent(generateReportText(currentSavedLiq))}`}
                   target="_blank" rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white font-bold py-4 rounded-xl hover:bg-[#1ebd5a] text-lg shadow-md transition-transform hover:scale-105"
@@ -1046,14 +1047,14 @@ export default function App() {
                   <Download size={24} /> {isGeneratingPdf ? 'Generando PDF...' : 'Descargar PDF'}
                 </button>
 
-                <button 
+                <button
                   onClick={resetAndExit}
                   className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 text-base shadow-md transition-colors"
                 >
                   ✓ Finalizar y Volver al Inicio
                 </button>
 
-                <button 
+                <button
                   onClick={() => { setShowSuccessModal(false); setCurrentView('landing'); }}
                   className="w-full pt-2 text-slate-400 font-bold hover:text-slate-600 text-sm underline"
                 >
@@ -1084,8 +1085,8 @@ export default function App() {
     }, {});
 
     const availableMonths = Object.keys(groupedStats);
-    const currentStats = availableMonths.length > 0 && groupedStats[selectedStatMonth] 
-      ? groupedStats[selectedStatMonth] 
+    const currentStats = availableMonths.length > 0 && groupedStats[selectedStatMonth]
+      ? groupedStats[selectedStatMonth]
       : { driver: 0, company: 0, pax: 0, laps: 0 };
 
     return (
@@ -1098,7 +1099,7 @@ export default function App() {
 
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3">
             <Filter className="text-slate-400" size={20} />
-            <select 
+            <select
               className="w-full bg-transparent outline-none font-bold text-slate-700 text-lg cursor-pointer"
               value={selectedStatMonth}
               onChange={(e) => setSelectedStatMonth(e.target.value)}
@@ -1166,15 +1167,15 @@ export default function App() {
                     <div key={liq.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div>
                         <p className="font-bold text-slate-800">{liq.date} - Maq: {liq.machineNum || 'N/A'}</p>
-                        <p className="text-sm text-slate-500">Saldo: {formatMoney(liq.totalBalance)} | Pax: {Object.keys(liq.tickets).reduce((a,c) => a+getPassengers(c, liq.tickets),0)}</p>
+                        <p className="text-sm text-slate-500">Saldo: {formatMoney(liq.totalBalance)} | Pax: {Object.keys(liq.tickets).reduce((a, c) => a + getPassengers(c, liq.tickets), 0)}</p>
                       </div>
                       <div className="flex gap-2">
-                        <button 
+                        <button
                           onClick={() => handlePrintHistory(liq)}
                           disabled={isGeneratingPdf}
                           className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg text-sm flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                          <Download size={16}/> {isGeneratingPdf ? 'Generando...' : 'Descargar PDF'}
+                          <Download size={16} /> {isGeneratingPdf ? 'Generando...' : 'Descargar PDF'}
                         </button>
                       </div>
                     </div>
@@ -1197,13 +1198,13 @@ export default function App() {
           <div className="flex items-center justify-between mb-8">
             <button onClick={() => setCurrentView('landing')} className="text-slate-500 hover:text-slate-800 font-bold flex items-center gap-2">← Volver al Inicio</button>
           </div>
-          
+
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-200">
             <h1 className="text-3xl font-black text-slate-800 mb-6 flex items-center gap-3">
-              <ShieldCheck className="text-emerald-500" size={32} /> 
+              <ShieldCheck className="text-emerald-500" size={32} />
               {isPrivacy ? 'Política de Privacidad' : 'Términos de Servicio'}
             </h1>
-            
+
             <div className="space-y-6 text-slate-600 leading-relaxed text-sm">
               <p>En <strong>RutaCuadrada</strong>, estamos comprometidos con la protección y el manejo responsable de la información generada por nuestros usuarios (conductores y empresas de transporte).</p>
               <h2 className="text-lg font-bold text-slate-800">1. Confidencialidad de los Datos</h2>
@@ -1212,7 +1213,7 @@ export default function App() {
               <p>La veracidad y legalidad de los datos ingresados en los cálculos son <strong>exclusiva responsabilidad del usuario</strong> que opera la aplicación.</p>
               <h2 className="text-lg font-bold text-slate-800">3. Uso del Servicio</h2>
               <p>El uso de la prueba gratuita está limitado a un máximo de 3 liquidaciones guardadas.</p>
-              
+
               <div className="mt-8 p-4 bg-slate-50 rounded-xl border border-slate-200 text-center">
                 <p className="font-bold text-slate-700">¿Tienes dudas legales o comerciales?</p>
                 <p>Contáctanos en: <a href="mailto:movingexpresschile@gmail.com" className="text-emerald-600 font-bold">movingexpresschile@gmail.com</a></p>
@@ -1227,5 +1228,5 @@ export default function App() {
   return <div>Cargando...</div>;
 }
 
-const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-const RotateCcwIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
+const UsersIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>;
+const RotateCcwIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" /></svg>;
