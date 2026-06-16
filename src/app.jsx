@@ -23,8 +23,6 @@ export default function App() {
 
   // [FREEMIUM - TAREA 4] Estado del Modal Freemium
   const [showFreemiumModal, setShowFreemiumModal] = useState(false);
-  // Modal invitación a crear cuenta (post-pago)
-  const [showCreateAccount, setShowCreateAccount] = useState(false);
 
   // PWA install
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -208,8 +206,12 @@ export default function App() {
     setCurrentView('landing');
   };
 
-  // Acceso 100% libre a la calculadora, sin requerir login
+  // [FREEMIUM - TAREA 2] Acceso libre a la calculadora sin verificación de trial
   const handleStartApp = () => {
+    if (!isLoggedIn) {
+      setShowLogin(true);
+      return;
+    }
     setCurrentView('setup');
   };
 
@@ -545,7 +547,7 @@ export default function App() {
             </div>
 
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight mt-6 text-white drop-shadow-md">
-              Cuadra tu bus,<br />
+              Cuadra tu Ruta del Día,<br />
               <span className="text-emerald-400 block mt-2">Sin Errores.</span>
             </h1>
 
@@ -685,7 +687,7 @@ export default function App() {
                 </div>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <p className="text-slate-400 line-through text-sm">Precio Normal: $49.990</p>
-                  <p className="text-4xl font-black text-emerald-600 my-1">$12.490</p>
+                  <p className="text-4xl font-black text-emerald-600 my-1">$2.000</p>
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pago Único - Licencia Permanente</p>
                 </div>
                 <div className="space-y-3">
@@ -1009,7 +1011,55 @@ export default function App() {
           </button>
         </div>
 
-        {/* ===== MODAL FREEMIUM: PAYWALL DE PAGO ===== */}
+        {/* MODAL DE ÉXITO */}
+        {showSuccessModal && (
+          <div className="fixed inset-0 bg-slate-900/90 flex items-center justify-center p-4 z-[100] backdrop-blur-sm print:hidden">
+            <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl">
+              <div className="bg-emerald-500 text-center p-6">
+                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-3 shadow-inner">
+                  <CheckCircle2 size={40} />
+                </div>
+                <h2 className="text-2xl font-black text-white tracking-tight">¡Cálculo Guardado!</h2>
+                <p className="text-emerald-100 text-sm mt-1">El reporte está seguro en tu historial.</p>
+              </div>
+
+              <div className="p-6 space-y-3">
+                <p className="text-center text-slate-600 text-sm font-medium mb-2">Envía o descarga tu reporte:</p>
+
+                <a
+                  href={`https://wa.me/${headerInfo.garitaPhone.replace(/\+/g, '')}?text=${encodeURIComponent(generateReportText(currentSavedLiq))}`}
+                  target="_blank" rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white font-bold py-4 rounded-xl hover:bg-[#1ebd5a] text-lg shadow-md transition-transform hover:scale-105"
+                >
+                  <MessageCircle size={24} /> Enviar por WhatsApp
+                </a>
+
+                <button
+                  onClick={() => currentSavedLiq && generatePDF(currentSavedLiq)}
+                  disabled={isGeneratingPdf}
+                  className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 text-lg shadow-md transition-transform hover:scale-105 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Download size={24} /> {isGeneratingPdf ? 'Generando PDF...' : 'Descargar PDF'}
+                </button>
+
+                <button
+                  onClick={resetAndExit}
+                  className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 text-base shadow-md transition-colors"
+                >
+                  ✓ Finalizar y Volver al Inicio
+                </button>
+
+                <button
+                  onClick={() => { setShowSuccessModal(false); setCurrentView('landing'); }}
+                  className="w-full pt-2 text-slate-400 font-bold hover:text-slate-600 text-sm underline"
+                >
+                  Volver al Inicio
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* [FREEMIUM - TAREA 4 - INICIO] Modal Freemium Paywall */}
         {showFreemiumModal && (
           <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[100] backdrop-blur-sm">
             <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl">
@@ -1026,16 +1076,11 @@ export default function App() {
                 </p>
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
                   <p className="text-slate-400 line-through text-sm">Precio Normal: $49.990</p>
-                  <p className="text-4xl font-black text-emerald-600 my-1">$12.490</p>
+                  <p className="text-4xl font-black text-emerald-600 my-1">$2.000</p>
                   <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pago Único · Licencia Permanente</p>
                 </div>
                 <button
-                  onClick={() => {
-                    window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank');
-                    // Tras abrir el pago, guardamos la liquidación y mostramos opciones
-                    saveLiquidation();
-                    setShowFreemiumModal(false);
-                  }}
+                  onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
                   className="block w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
                 >
                   Adquiere tu licencia completa en Oferta
@@ -1050,112 +1095,7 @@ export default function App() {
             </div>
           </div>
         )}
-
-        {/* ===== MODAL ÉXITO POST-PAGO: COMPARTIR + INVITAR A CREAR CUENTA ===== */}
-        {showSuccessModal && currentSavedLiq && (
-          <div className="fixed inset-0 bg-slate-900/90 flex items-center justify-center p-4 z-[100] backdrop-blur-sm">
-            <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl">
-              <div className="bg-emerald-500 text-center p-6">
-                <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto text-emerald-500 mb-3 shadow-inner">
-                  <CheckCircle2 size={40} />
-                </div>
-                <h2 className="text-2xl font-black text-white tracking-tight">¡Reporte Listo!</h2>
-                <p className="text-emerald-100 text-sm mt-1">Descarga y comparte tu liquidación</p>
-              </div>
-
-              <div className="p-6 space-y-3">
-                {/* WhatsApp */}
-                <a
-                  href={`https://wa.me/${headerInfo.garitaPhone.replace(/\+/g, '')}?text=${encodeURIComponent(generateReportText(currentSavedLiq))}`}
-                  target="_blank" rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-3 bg-[#25D366] text-white font-bold py-4 rounded-xl hover:bg-[#1ebd5a] text-lg shadow-md"
-                >
-                  <MessageCircle size={24} /> Enviar por WhatsApp
-                </a>
-
-                {/* Descargar PDF */}
-                <button
-                  onClick={() => currentSavedLiq && generatePDF(currentSavedLiq)}
-                  disabled={isGeneratingPdf}
-                  className="w-full flex items-center justify-center gap-3 bg-blue-600 text-white font-bold py-4 rounded-xl hover:bg-blue-700 text-lg shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
-                >
-                  <Download size={24} /> {isGeneratingPdf ? 'Generando PDF...' : 'Descargar PDF'}
-                </button>
-
-                {/* Separador invitación a crear cuenta */}
-                <div className="border-t border-slate-100 pt-3">
-                  <p className="text-center text-slate-500 text-xs font-medium mb-3">
-                    💡 Crea tu cuenta para guardar tu historial y acceder desde cualquier dispositivo
-                  </p>
-                  <button
-                    onClick={() => { setShowSuccessModal(false); setShowCreateAccount(true); }}
-                    className="w-full bg-emerald-500 text-slate-900 font-bold py-3 rounded-xl hover:bg-emerald-400 transition-colors text-sm"
-                  >
-                    Crear cuenta y guardar historial
-                  </button>
-                </div>
-
-                <button
-                  onClick={resetAndExit}
-                  className="w-full text-slate-400 font-medium hover:text-slate-600 text-sm pt-1"
-                >
-                  Salir sin crear cuenta
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ===== MODAL CREAR CUENTA (post-pago, invitación) ===== */}
-        {showCreateAccount && (
-          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[110] backdrop-blur-sm">
-            <div className="bg-white p-8 rounded-2xl max-w-sm w-full text-center shadow-2xl relative">
-              <button onClick={() => { setShowCreateAccount(false); resetAndExit(); }} className="absolute top-4 right-4 text-slate-400 hover:text-slate-800">✕</button>
-              <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User size={32} />
-              </div>
-              <h2 className="text-2xl font-black text-slate-800 mb-1">Crea tu cuenta</h2>
-              <p className="text-slate-500 text-sm mb-6">Guarda tu historial y accede desde cualquier dispositivo.</p>
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                if (userEmail.trim() !== '') {
-                  setIsLoggedIn(true);
-                  if (rememberMe) {
-                    const expiry = new Date().getTime() + (30 * 24 * 60 * 60 * 1000);
-                    localStorage.setItem('rutacuadrada_session_expiry', expiry.toString());
-                    localStorage.setItem('rutacuadrada_session_email', userEmail);
-                  } else {
-                    localStorage.setItem('rutacuadrada_user', userEmail);
-                  }
-                  setShowCreateAccount(false);
-                  resetAndExit();
-                }
-              }}>
-                <input
-                  type="email" required placeholder="tu@correo.com"
-                  className="w-full p-3 border-2 border-slate-200 rounded-xl mb-3 focus:border-emerald-500 outline-none transition-colors text-center font-medium"
-                  value={userEmail} onChange={(e) => setUserEmail(e.target.value)}
-                />
-                <input
-                  type="password" placeholder="Contraseña (mínimo 4 caracteres)"
-                  className="w-full p-3 border-2 border-slate-200 rounded-xl mb-4 focus:border-emerald-500 outline-none transition-colors text-center font-medium"
-                  value={userPassword} onChange={(e) => setUserPassword(e.target.value)}
-                />
-                <div className="flex items-center justify-center gap-2 mb-4">
-                  <input type="checkbox" id="rememberMe2" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} className="w-4 h-4 accent-emerald-500 cursor-pointer" />
-                  <label htmlFor="rememberMe2" className="text-sm text-slate-600 cursor-pointer">Mantener sesión abierta</label>
-                </div>
-                <button type="submit" className="w-full bg-emerald-500 text-slate-900 font-bold py-3 rounded-xl hover:bg-emerald-400 mb-2">
-                  Crear cuenta
-                </button>
-                <button type="button" onClick={() => { setShowCreateAccount(false); resetAndExit(); }} className="w-full text-slate-400 text-sm font-medium hover:text-slate-600">
-                  Ahora no, salir
-                </button>
-              </form>
-            </div>
-          </div>
-        )}
-
+        {/* [FREEMIUM - TAREA 4 - FIN] */}
       </div>
     );
   }
