@@ -206,12 +206,8 @@ export default function App() {
     setCurrentView('landing');
   };
 
-  // [FREEMIUM - TAREA 2] Acceso libre a la calculadora sin verificación de trial
+  // Acceso 100% libre a la calculadora sin requerir login
   const handleStartApp = () => {
-    if (!isLoggedIn) {
-      setShowLogin(true);
-      return;
-    }
     setCurrentView('setup');
   };
 
