@@ -21,6 +21,9 @@ export default function App() {
   const [currentSavedLiq, setCurrentSavedLiq] = useState(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+  // [FREEMIUM - TAREA 4] Estado del Modal Freemium
+  const [showFreemiumModal, setShowFreemiumModal] = useState(false);
+
   // PWA install
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -203,17 +206,13 @@ export default function App() {
     setCurrentView('landing');
   };
 
+  // [FREEMIUM - TAREA 2] Acceso libre a la calculadora sin verificación de trial
   const handleStartApp = () => {
     if (!isLoggedIn) {
       setShowLogin(true);
       return;
     }
-    if (trialCount >= 3) {
-      setCurrentView('landing');
-      setShowPaywall(true);
-    } else {
-      setCurrentView('setup');
-    }
+    setCurrentView('setup');
   };
 
   const handleNavigate = (view) => {
@@ -245,13 +244,8 @@ export default function App() {
   };
 
   // ===================== GUARDAR LIQUIDACIÓN =====================
+  // [FREEMIUM - TAREA 3] saveLiquidation guarda los datos pero ya no genera PDF directamente
   const saveLiquidation = () => {
-    if (trialCount >= 3) {
-      setCurrentView('landing');
-      setShowPaywall(true);
-      return;
-    }
-
     // Guardar datos del conductor para próximas sesiones
     if (userEmail) {
       saveDriverData(userEmail, headerInfo);
@@ -547,8 +541,8 @@ export default function App() {
               <button
                 onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
                 className="inline-flex flex-col items-center bg-red-600 text-white font-black px-8 py-3 rounded-2xl animate-pulse shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border border-red-400 cursor-pointer">
-                <span className="text-sm md:text-lg tracking-wide">⚡ OFERTA CYBER: 75% DESCUENTO ⚡</span>
-                <span className="text-xs md:text-sm font-medium mt-1 text-red-100">Adquiere tu licencia de por vida</span>
+                {/* [FREEMIUM - TAREA 1] Texto del botón de oferta actualizado */}
+                <span className="text-sm md:text-lg tracking-wide">🏷️ Adquiere tu licencia completa en Oferta</span>
               </button>
             </div>
 
@@ -1002,7 +996,8 @@ export default function App() {
                 {formatMoney(totalBalance)}
               </div>
             </div>
-            <button onClick={saveLiquidation} className="w-full bg-emerald-500 text-slate-900 font-black py-5 text-lg hover:bg-emerald-400 transition-colors flex justify-center items-center gap-2">
+            {/* [FREEMIUM - TAREA 3] Botón interceptado: abre modal freemium en lugar de guardar directamente */}
+            <button onClick={() => setShowFreemiumModal(true)} className="w-full bg-emerald-500 text-slate-900 font-black py-5 text-lg hover:bg-emerald-400 transition-colors flex justify-center items-center gap-2">
               <ShieldCheck size={24} /> GUARDAR LIQUIDACIÓN
             </button>
           </div>
@@ -1064,6 +1059,43 @@ export default function App() {
             </div>
           </div>
         )}
+        {/* [FREEMIUM - TAREA 4 - INICIO] Modal Freemium Paywall */}
+        {showFreemiumModal && (
+          <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-[100] backdrop-blur-sm">
+            <div className="bg-white rounded-3xl max-w-sm w-full overflow-hidden shadow-2xl">
+              <div className="bg-slate-900 text-white p-6 text-center">
+                <div className="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Lock size={36} className="text-emerald-400" />
+                </div>
+                <h2 className="text-2xl font-black tracking-tight">¡Cálculo Completado!</h2>
+                <p className="text-slate-400 text-sm mt-1">Tu ruta está lista para reportar</p>
+              </div>
+              <div className="p-6 space-y-4 text-center">
+                <p className="text-slate-700 text-sm leading-relaxed">
+                  Has calculado tu ruta con éxito. Para generar, descargar y compartir tu reporte en PDF, adquiere tu licencia completa.
+                </p>
+                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                  <p className="text-slate-400 line-through text-sm">Precio Normal: $49.990</p>
+                  <p className="text-4xl font-black text-emerald-600 my-1">$12.490</p>
+                  <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Pago Único · Licencia Permanente</p>
+                </div>
+                <button
+                  onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
+                  className="block w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-800 transition-colors shadow-lg"
+                >
+                  Adquiere tu licencia completa en Oferta
+                </button>
+                <button
+                  onClick={() => setShowFreemiumModal(false)}
+                  className="w-full text-slate-400 text-sm font-medium hover:text-slate-600 pt-1"
+                >
+                  Volver a la calculadora
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {/* [FREEMIUM - TAREA 4 - FIN] */}
       </div>
     );
   }
