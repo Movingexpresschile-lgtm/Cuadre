@@ -496,34 +496,44 @@ export default function App() {
             <span className="text-[11px] italic text-emerald-400 font-light tracking-wider">Menos Cuentas. Más Control.</span>
           </div>
           {isLoggedIn ? (
-            <div className="relative">
-              <button
-                onClick={() => setIsPanelOpen(!isPanelOpen)}
-                className="flex items-center gap-2 text-sm font-semibold text-emerald-400 bg-slate-800 px-4 py-2 rounded-full hover:bg-slate-700 transition-colors"
-              >
-                <User size={16} /> Mi Panel
-              </button>
-              {isPanelOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 border border-slate-100 z-50 overflow-hidden">
-                  <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 mb-1">
-                    <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Sesión Activa</p>
-                    <p className="text-sm font-bold text-slate-700 truncate">{userEmail}</p>
+            <div className="flex items-center gap-3">
+              <a href="/articulos.html" className="flex items-center gap-2 text-sm font-semibold hover:text-emerald-400 transition-colors">
+                Artículos
+              </a>
+              <div className="relative">
+                <button
+                  onClick={() => setIsPanelOpen(!isPanelOpen)}
+                  className="flex items-center gap-2 text-sm font-semibold text-emerald-400 bg-slate-800 px-4 py-2 rounded-full hover:bg-slate-700 transition-colors"
+                >
+                  <User size={16} /> Mi Panel
+                </button>
+                {isPanelOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl py-2 border border-slate-100 z-50 overflow-hidden">
+                    <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 mb-1">
+                      <p className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Sesión Activa</p>
+                      <p className="text-sm font-bold text-slate-700 truncate">{userEmail}</p>
+                    </div>
+                    <button onClick={() => handleNavigate('stats')} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 flex items-center gap-2">
+                      <BarChart3 size={16} /> Mis Estadísticas
+                    </button>
+                    <button onClick={() => handleNavigate('reports')} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2">
+                      <FileText size={16} /> Mis Reportes PDF
+                    </button>
+                    <div className="border-t border-slate-100 mt-1"></div>
+                    <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2">
+                      <LogOut size={16} /> Cerrar Sesión
+                    </button>
                   </div>
-                  <button onClick={() => handleNavigate('stats')} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-emerald-600 flex items-center gap-2">
-                    <BarChart3 size={16} /> Mis Estadísticas
-                  </button>
-                  <button onClick={() => handleNavigate('reports')} className="w-full text-left px-4 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-blue-600 flex items-center gap-2">
-                    <FileText size={16} /> Mis Reportes PDF
-                  </button>
-                  <div className="border-t border-slate-100 mt-1"></div>
-                  <button onClick={handleLogout} className="w-full text-left px-4 py-3 text-sm font-bold text-red-600 hover:bg-red-50 flex items-center gap-2">
-                    <LogOut size={16} /> Cerrar Sesión
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           ) : (
-            <button onClick={() => setShowLogin(true)} className="flex items-center gap-2 text-sm font-semibold hover:text-emerald-400"><LogIn size={18} /> Iniciar Sesión</button>
+            <div className="flex items-center gap-3">
+              <a href="/articulos.html" className="flex items-center gap-2 text-sm font-semibold hover:text-emerald-400 transition-colors">
+                Artículos
+              </a>
+              <button onClick={() => setShowLogin(true)} className="flex items-center gap-2 text-sm font-semibold hover:text-emerald-400"><LogIn size={18} /> Iniciar Sesión</button>
+            </div>
           )}
         </nav>
 
@@ -533,12 +543,10 @@ export default function App() {
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 to-slate-900" />
 
           <div className="max-w-4xl mx-auto space-y-8 relative z-10">
-            <div className="flex justify-center">
-              <button
-                onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
-                className="inline-flex flex-col items-center bg-red-600 text-white font-black px-8 py-3 rounded-2xl animate-pulse shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border border-red-400 cursor-pointer">
-                {/* [FREEMIUM - TAREA 1] Texto del botón de oferta actualizado */}
-                <span className="text-sm md:text-lg tracking-wide">🏷️ Adquiere tu licencia completa en Oferta</span>
+
+            <div className="mt-2">
+              <button onClick={handleStartApp} className="bg-emerald-500 text-slate-900 font-black text-xl py-5 px-12 rounded-full hover:bg-emerald-400 transition-transform transform hover:scale-105 shadow-[0_10px_30px_rgba(16,185,129,0.3)]">
+                Iniciar mis cálculos <ChevronRight className="inline" size={24} />
               </button>
             </div>
 
@@ -547,18 +555,20 @@ export default function App() {
               <span className="text-emerald-400 block mt-2">Sin Errores.</span>
             </h1>
 
-            <div className="mt-8">
-              <button onClick={handleStartApp} className="bg-emerald-500 text-slate-900 font-black text-xl py-5 px-12 rounded-full hover:bg-emerald-400 transition-transform transform hover:scale-105 shadow-[0_10px_30px_rgba(16,185,129,0.3)]">
-                Iniciar mis cálculos <ChevronRight className="inline" size={24} />
-              </button>
-            </div>
-
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
               <button onClick={() => handleNavigate('stats')} className="animate-bounce flex items-center justify-center gap-2 bg-slate-800/80 backdrop-blur-sm text-white px-6 py-3 rounded-full border border-slate-700 hover:border-emerald-500 hover:text-emerald-400 transition-colors shadow-lg">
                 <BarChart3 size={20} className="text-emerald-400" /> Mis Estadísticas
               </button>
               <button onClick={() => handleNavigate('reports')} className="flex items-center justify-center gap-2 bg-slate-800/80 backdrop-blur-sm text-white px-6 py-3 rounded-full border border-slate-700 hover:border-blue-500 hover:text-blue-400 transition-colors shadow-lg">
                 <FileText size={20} className="text-blue-400" /> Reportes PDF
+              </button>
+            </div>
+
+            <div className="flex justify-center mt-6">
+              <button
+                onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
+                className="inline-flex flex-col items-center bg-red-600 text-white font-black px-8 py-3 rounded-2xl animate-pulse shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border border-red-400 cursor-pointer">
+                <span className="text-sm md:text-lg tracking-wide">🏷️ Adquiere tu licencia completa en Oferta</span>
               </button>
             </div>
           </div>
