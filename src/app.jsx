@@ -540,6 +540,15 @@ export default function App() {
         {/* Hero */}
         <header className="bg-slate-900 text-white pt-16 pb-24 px-4 text-center overflow-hidden relative flex-grow flex flex-col justify-center">
           <div className="absolute inset-0 opacity-40 bg-[url('https://images.unsplash.com/photo-1544620347-c4fd6a3d5957?auto=format&fit=crop&q=80&w=2000')] bg-cover bg-center" />
+          {/* Patrón sutil de símbolos matemáticos y datos */}
+          <div
+            className="absolute inset-0 opacity-[0.07] pointer-events-none"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Ctext x='20' y='60' font-family='Georgia,serif' font-size='48' fill='%2334d399'%3E%E2%88%AB%3C/text%3E%3Ctext x='160' y='50' font-family='Georgia,serif' font-size='40' fill='%2334d399'%3E%CE%A3%3C/text%3E%3Ctext x='280' y='70' font-family='Georgia,serif' font-size='44' fill='%2334d399'%3E%CF%80%3C/text%3E%3Ctext x='60' y='160' font-family='Arial' font-size='42' fill='%2334d399'%3E=%3C/text%3E%3Ctext x='220' y='170' font-family='Arial' font-size='38' fill='%2334d399'%3E%25%3C/text%3E%3Cpolyline points='40,260 80,230 120,250 160,200 200,220 240,180 280,210 320,160' fill='none' stroke='%2334d399' stroke-width='3'/%3E%3Ctext x='30' y='340' font-family='Georgia,serif' font-size='40' fill='%2334d399'%3E%CF%80%3C/text%3E%3Ctext x='150' y='330' font-family='Arial' font-size='40' fill='%2334d399'%3E%25%3C/text%3E%3Ctext x='270' y='350' font-family='Georgia,serif' font-size='44' fill='%2334d399'%3E%E2%88%AB%3C/text%3E%3C/svg%3E")`,
+              backgroundRepeat: 'repeat',
+              backgroundSize: '400px 400px',
+            }}
+          />
           <div className="absolute inset-0 bg-gradient-to-b from-slate-900/60 to-slate-900" />
 
           <div className="max-w-4xl mx-auto space-y-8 relative z-10">
@@ -551,8 +560,8 @@ export default function App() {
             </div>
 
             <h1 className="text-5xl md:text-7xl font-extrabold leading-tight tracking-tight mt-6 text-white drop-shadow-md">
-              Cuadra tu Ruta del Día,<br />
-              <span className="text-emerald-400 block mt-2">Sin Errores.</span>
+              Líquida.<br />
+              <span className="text-emerald-400 block mt-2">Rápido. Exacto.</span>
             </h1>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
