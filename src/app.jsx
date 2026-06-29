@@ -240,7 +240,7 @@ export default function App() {
   };
 
   // ===================== GUARDAR LIQUIDACIÓN =====================
-  // [FREEMIUM - TAREA 3] saveLiquidation guarda los datos pero ya no genera PDF directamente
+  // Operación 100% libre: guarda la liquidación y abre el modal de éxito (compartir/PDF/crear cuenta)
   const saveLiquidation = () => {
     // Guardar datos del conductor para próximas sesiones
     if (userEmail) {
@@ -556,7 +556,7 @@ export default function App() {
             </h1>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
-              <button onClick={() => handleNavigate('stats')} className="animate-bounce flex items-center justify-center gap-2 bg-slate-800/80 backdrop-blur-sm text-white px-6 py-3 rounded-full border border-slate-700 hover:border-emerald-500 hover:text-emerald-400 transition-colors shadow-lg">
+              <button onClick={() => handleNavigate('stats')} className="flex items-center justify-center gap-2 bg-slate-800/80 backdrop-blur-sm text-white px-6 py-3 rounded-full border border-slate-700 hover:border-emerald-500 hover:text-emerald-400 transition-colors shadow-lg">
                 <BarChart3 size={20} className="text-emerald-400" /> Mis Estadísticas
               </button>
               <button onClick={() => handleNavigate('reports')} className="flex items-center justify-center gap-2 bg-slate-800/80 backdrop-blur-sm text-white px-6 py-3 rounded-full border border-slate-700 hover:border-blue-500 hover:text-blue-400 transition-colors shadow-lg">
@@ -567,8 +567,8 @@ export default function App() {
             <div className="flex justify-center mt-6">
               <button
                 onClick={() => window.open('https://www.flow.cl/btn.php?token=qf8691478077e8d649aae7f380c116e87afd54fd', '_blank')}
-                className="inline-flex flex-col items-center bg-red-600 text-white font-black px-8 py-3 rounded-2xl animate-pulse shadow-[0_0_25px_rgba(220,38,38,0.7)] hover:scale-105 transition-transform border border-red-400 cursor-pointer">
-                <span className="text-sm md:text-lg tracking-wide">🏷️ Adquiere tu licencia completa en Oferta</span>
+                className="inline-flex flex-col items-center bg-emerald-600 text-white font-bold px-8 py-3 rounded-2xl shadow-[0_0_20px_rgba(16,185,129,0.4)] hover:scale-105 hover:bg-emerald-500 transition-all border border-emerald-400 cursor-pointer">
+                <span className="text-sm md:text-base tracking-wide">💚 Funcionamos gracias a tu colaboración — Apóyanos aquí</span>
               </button>
             </div>
           </div>
@@ -1002,8 +1002,8 @@ export default function App() {
                 {formatMoney(totalBalance)}
               </div>
             </div>
-            {/* [FREEMIUM - TAREA 3] Botón interceptado: abre modal freemium en lugar de guardar directamente */}
-            <button onClick={() => setShowFreemiumModal(true)} className="w-full bg-emerald-500 text-slate-900 font-black py-5 text-lg hover:bg-emerald-400 transition-colors flex justify-center items-center gap-2">
+            {/* Operación libre: el botón guarda la liquidación directamente, sin paywall */}
+            <button onClick={saveLiquidation} className="w-full bg-emerald-500 text-slate-900 font-black py-5 text-lg hover:bg-emerald-400 transition-colors flex justify-center items-center gap-2">
               <ShieldCheck size={24} /> GUARDAR LIQUIDACIÓN
             </button>
           </div>
