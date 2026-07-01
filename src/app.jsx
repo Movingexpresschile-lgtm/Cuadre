@@ -211,12 +211,9 @@ export default function App() {
     setCurrentView('setup');
   };
 
+  // Navegación libre: stats y reports accesibles sin login
   const handleNavigate = (view) => {
     setIsPanelOpen(false);
-    if (!isLoggedIn) {
-      setShowLogin(true);
-      return;
-    }
     setCurrentView(view);
   };
 
@@ -303,7 +300,7 @@ export default function App() {
       }
     });
     if (!ticketDetails) ticketDetails = 'Sin boletos registrados\n';
-    return `*RutaCuadrada - Reporte de Liquidación*\nFecha: ${data.date}\nConductor: ${data.driverName}\nVehículo: ${data.plate} - Maq: ${data.machineNum}\n\n-- DETALLE DE INGRESOS --\n${ticketDetails}\n*INGRESO TOTAL: ${formatMoney(data.totalIncome)}*\n\n-- GASTOS --\nPlanilla: ${formatMoney(data.expenses.planilla || 0)}\nPetróleo: ${formatMoney(data.expenses.petroleo || 0)}\nLimpieza: ${formatMoney(data.expenses.limpieza || 0)}\nMantenciones: ${formatMoney(data.expenses.mantenciones || 0)}\nOtros Gastos: ${formatMoney(data.expenses.otros || 0)}\nComisión Chofer: ${formatMoney(data.driverCommission || 0)}\n*TOTAL GASTOS: ${formatMoney(data.totalExpenses)}*\n\n-- SALDO A ENTREGAR --\n*${formatMoney(data.totalBalance)}*\n\nObservaciones: ${data.observations || 'Ninguna'}`;
+    return `*RutaCuadrada - Reporte de Liquidación*\nFecha: ${data.date}\nConductor: ${data.driverName}\nVehículo: ${data.plate} - Maq: ${data.machineNum}\n\n-- DETALLE DE INGRESOS --\n${ticketDetails}\n*INGRESO TOTAL: ${formatMoney(data.totalIncome)}*\n\n-- GASTOS --\nPlanilla: ${formatMoney(data.expenses.planilla || 0)}\nCombustible: ${formatMoney(data.expenses.petroleo || 0)}\nLimpieza: ${formatMoney(data.expenses.limpieza || 0)}\nMantenciones: ${formatMoney(data.expenses.mantenciones || 0)}\nOtros Gastos: ${formatMoney(data.expenses.otros || 0)}\nComisión Chofer: ${formatMoney(data.driverCommission || 0)}\n*TOTAL GASTOS: ${formatMoney(data.totalExpenses)}*\n\n-- SALDO A ENTREGAR --\n*${formatMoney(data.totalBalance)}*\n\nObservaciones: ${data.observations || 'Ninguna'}`;
   };
 
   // ===================== GENERAR PDF DESCARGABLE =====================
@@ -405,7 +402,7 @@ export default function App() {
       doc.setTextColor(30, 30, 30);
       const gastosRows = [
         ['Planilla', liq.expenses.planilla],
-        ['Petróleo', liq.expenses.petroleo],
+        ['Combustible', liq.expenses.petroleo],
         ['Limpieza', liq.expenses.limpieza],
         ['Mantenciones', liq.expenses.mantenciones],
         ['Otros Gastos', liq.expenses.otros],
@@ -736,32 +733,15 @@ export default function App() {
 
           <div className="bg-white p-6 md:p-8 rounded-3xl shadow-sm border border-slate-200">
             <h2 className="text-2xl font-black text-slate-800 mb-2 flex items-center gap-2">
-              <BusFront className="text-emerald-500" /> Configuración Inicial
+              <BusFront className="text-emerald-500" /> Iniciar Cálculo
             </h2>
-            <p className="text-slate-500 text-sm mb-8">Ingresa los datos de tu ruta. Esto tomará solo 30 segundos.</p>
+            <p className="text-slate-500 text-sm mb-8">Ingresa los valores y los números de tus boletos para comenzar.</p>
 
             <div className="space-y-6">
-              <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
-                <h3 className="font-bold text-slate-700 text-sm uppercase flex items-center gap-2"><User size={16} /> Conductor y Vehículo</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <input type="text" placeholder="Nombre del Conductor" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.driverName} onChange={e => setHeaderInfo({ ...headerInfo, driverName: e.target.value })} />
-                  <input type="text" placeholder="RUT (Ej: 15.123.456-7)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.driverRut} onChange={e => setHeaderInfo({ ...headerInfo, driverRut: e.target.value })} />
-                  <input type="text" placeholder="Empresa (Opcional - Ej: Ruta Lampa)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.company} onChange={e => setHeaderInfo({ ...headerInfo, company: e.target.value })} />
-                  <input type="text" placeholder="Recorrido (Opcional - Ej: Stgo-Centro)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.route} onChange={e => setHeaderInfo({ ...headerInfo, route: e.target.value })} />
-                  <input type="text" placeholder="Nº Patente" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.plate} onChange={e => setHeaderInfo({ ...headerInfo, plate: e.target.value })} />
-                  <input type="text" placeholder="Nº Máquina Interno" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500" value={headerInfo.machineNum} onChange={e => setHeaderInfo({ ...headerInfo, machineNum: e.target.value })} />
-                </div>
-              </div>
 
-              <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 space-y-4">
-                <h3 className="font-bold text-blue-900 text-sm uppercase flex items-center gap-2"><Send size={16} /> Destino del Reporte</h3>
-                <div className="grid grid-cols-1 gap-4">
-                  <input type="tel" placeholder="WhatsApp de la Garita o Dueño (+569...)" className="w-full p-3 border border-blue-200 rounded-xl outline-none focus:border-blue-500 font-medium" value={headerInfo.garitaPhone} onChange={e => setHeaderInfo({ ...headerInfo, garitaPhone: e.target.value })} />
-                </div>
-              </div>
-
+              {/* Valores de Boletos */}
               <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 space-y-4">
-                <h3 className="font-bold text-slate-700 text-sm uppercase flex items-center gap-2"><TrendingDown size={16} /> Precios de Boletos del Día</h3>
+                <h3 className="font-bold text-slate-700 text-sm uppercase flex items-center gap-2"><TrendingDown size={16} /> Valores de Boletos</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {Object.keys(ticketPrices).map(cat => (
                     <div key={cat}>
@@ -774,10 +754,43 @@ export default function App() {
                   ))}
                 </div>
               </div>
+
+              {/* Boletos Cortados — Fase 2 */}
+              <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
+                <div className="bg-slate-900 text-white p-3 font-bold flex justify-between items-center">
+                  <span className="flex items-center gap-2"><FileText size={18} /> Boletos Cortados</span>
+                  <span className="text-xs bg-emerald-500 text-slate-900 px-2 py-1 rounded font-black">FASE 2</span>
+                </div>
+                <div className="p-4 space-y-4">
+                  {Object.keys(ticketPrices).map((cat) => (
+                    <div key={cat} className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-100">
+                      <div className="col-span-12 sm:col-span-2 font-bold text-slate-700">{labels[cat]}</div>
+                      <div className="col-span-4 sm:col-span-3">
+                        <input type="number" placeholder="Inicio" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-emerald-500 font-mono text-sm" value={tickets[cat].start} onChange={(e) => setTickets({ ...tickets, [cat]: { ...tickets[cat], start: e.target.value } })} />
+                      </div>
+                      <div className="col-span-4 sm:col-span-3">
+                        <input type="number" placeholder="Fin" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-emerald-500 font-mono text-sm" value={tickets[cat].end} onChange={(e) => setTickets({ ...tickets, [cat]: { ...tickets[cat], end: e.target.value } })} />
+                      </div>
+                      <div className="col-span-4 sm:col-span-2 text-center bg-slate-200 rounded-lg py-1.5 font-bold text-slate-600 text-sm">
+                        {getPassengers(cat)} <span className="text-[10px] uppercase block -mt-1">Pax</span>
+                      </div>
+                      <div className="col-span-12 sm:col-span-2 text-right font-black text-slate-800 flex justify-between sm:block items-center">
+                        <span className="text-xs text-slate-400 sm:hidden">Total:</span>
+                        <span>{formatMoney(getAmount(cat))}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="bg-emerald-50 p-4 border-t border-emerald-100 flex justify-between items-center">
+                  <span className="font-black text-emerald-900">INGRESO TOTAL</span>
+                  <span className="text-2xl font-black text-emerald-700">{formatMoney(totalIncome)}</span>
+                </div>
+              </div>
+
             </div>
 
             <button onClick={() => setCurrentView('daily')} className="w-full mt-8 bg-slate-900 text-white py-4 rounded-xl font-black text-lg hover:bg-slate-800 transition-colors shadow-lg flex justify-center items-center gap-2">
-              Iniciar Rendición <ChevronRight />
+              Continuar con Gastos <ChevronRight />
             </button>
           </div>
         </div>
@@ -850,7 +863,7 @@ export default function App() {
                   <h3 className="font-bold border-b border-slate-300 mb-2 pb-1">Desglose de Gastos</h3>
                   <div className="space-y-1">
                     <div className="flex justify-between"><span>Planilla:</span> <span>{formatMoney(currentSavedLiq.expenses.planilla)}</span></div>
-                    <div className="flex justify-between"><span>Petróleo:</span> <span>{formatMoney(currentSavedLiq.expenses.petroleo)}</span></div>
+                    <div className="flex justify-between"><span>Combustible:</span> <span>{formatMoney(currentSavedLiq.expenses.petroleo)}</span></div>
                     <div className="flex justify-between"><span>Limpieza:</span> <span>{formatMoney(currentSavedLiq.expenses.limpieza)}</span></div>
                     <div className="flex justify-between"><span>Mantenciones:</span> <span>{formatMoney(currentSavedLiq.expenses.mantenciones)}</span></div>
                     <div className="flex justify-between"><span>Otros Gastos:</span> <span>{formatMoney(currentSavedLiq.expenses.otros)}</span></div>
@@ -887,69 +900,7 @@ export default function App() {
             <span className="text-xs font-bold text-slate-400">{headerInfo.date}</span>
           </div>
 
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
-            <div>
-              <p className="font-black text-slate-800">{headerInfo.driverName || 'Conductor'}</p>
-              <p className="text-xs text-slate-500">{headerInfo.plate ? `Patente: ${headerInfo.plate}` : 'Vehículo no especificado'}</p>
-            </div>
-            <div className="bg-slate-100 px-3 py-1 rounded-lg text-center">
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Máquina</p>
-              <p className="font-black text-slate-700">{headerInfo.machineNum || '--'}</p>
-            </div>
-          </div>
-
-          {/* Marcador de Vueltas */}
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Marcador de Vueltas Registradas</h3>
-            <div className="grid grid-cols-4 gap-2">
-              {['v1', 'v2', 'v3', 'v4'].map((v, i) => (
-                <button
-                  key={v}
-                  onClick={() => setLaps({ ...laps, [v]: !laps[v] })}
-                  className={`py-2 rounded-xl border-2 font-black transition-all ${laps[v] ? 'bg-emerald-100 border-emerald-500 text-emerald-700' : 'bg-slate-50 border-slate-200 text-slate-400'}`}
-                >
-                  {laps[v] && <CheckCircle2 size={16} className="inline mr-1" />}
-                  V{i + 1}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Ingresos por Boletos */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-slate-900 text-white p-3 font-bold flex justify-between items-center">
-              <span className="flex items-center gap-2"><FileText size={18} /> Boletos Cortados</span>
-              <span className="text-xs bg-emerald-500 text-slate-900 px-2 py-1 rounded font-black">FASE 2</span>
-            </div>
-
-            <div className="p-4 space-y-4">
-              {Object.keys(ticketPrices).map((cat) => (
-                <div key={cat} className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-xl border border-slate-100">
-                  <div className="col-span-12 sm:col-span-2 font-bold text-slate-700">{labels[cat]}</div>
-                  <div className="col-span-4 sm:col-span-3">
-                    <input type="number" placeholder="Inicio" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-emerald-500 font-mono text-sm" value={tickets[cat].start} onChange={(e) => setTickets({ ...tickets, [cat]: { ...tickets[cat], start: e.target.value } })} />
-                  </div>
-                  <div className="col-span-4 sm:col-span-3">
-                    <input type="number" placeholder="Fin" className="w-full p-2 border border-slate-300 rounded-lg outline-none focus:border-emerald-500 font-mono text-sm" value={tickets[cat].end} onChange={(e) => setTickets({ ...tickets, [cat]: { ...tickets[cat], end: e.target.value } })} />
-                  </div>
-                  <div className="col-span-4 sm:col-span-2 text-center bg-slate-200 rounded-lg py-1.5 font-bold text-slate-600 text-sm">
-                    {getPassengers(cat)} <span className="text-[10px] uppercase block -mt-1">Pax</span>
-                  </div>
-                  <div className="col-span-12 sm:col-span-2 text-right font-black text-slate-800 flex justify-between sm:block items-center">
-                    <span className="text-xs text-slate-400 sm:hidden">Total:</span>
-                    <span>{formatMoney(getAmount(cat))}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="bg-emerald-50 p-4 border-t border-emerald-100 flex justify-between items-center">
-              <span className="font-black text-emerald-900">INGRESO TOTAL</span>
-              <span className="text-2xl font-black text-emerald-700">{formatMoney(totalIncome)}</span>
-            </div>
-          </div>
-
-          {/* Gastos y Comisión */}
+          {/* BLOQUE 1: Gastos Operativos */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="bg-red-500 text-white p-3 font-bold flex items-center gap-2">
               <TrendingDown size={18} /> Gastos Operativos
@@ -957,7 +908,7 @@ export default function App() {
             <div className="p-4 space-y-3">
               {[
                 { id: 'planilla', label: 'Planilla' },
-                { id: 'petroleo', label: 'Petróleo' },
+                { id: 'petroleo', label: 'Combustible' },
                 { id: 'limpieza', label: 'Servicio de Limpieza' },
                 { id: 'mantenciones', label: 'Mantenciones' },
                 { id: 'otros', label: 'Otros Gastos' }
@@ -970,7 +921,6 @@ export default function App() {
                   </div>
                 </div>
               ))}
-
               <div className="flex justify-between items-center p-2 bg-blue-50 rounded-lg border border-blue-100 mt-2">
                 <div>
                   <label className="font-bold text-blue-900 text-sm flex items-center gap-2">Comisión Conductor</label>
@@ -979,41 +929,97 @@ export default function App() {
                     <span className="text-xs text-blue-700 font-bold">% del Ingreso</span>
                   </div>
                 </div>
-                <div className="font-black text-blue-800 text-lg">
-                  {formatMoney(driverCommission)}
-                </div>
+                <div className="font-black text-blue-800 text-lg">{formatMoney(driverCommission)}</div>
               </div>
             </div>
-
             <div className="bg-red-50 p-4 border-t border-red-100 flex justify-between items-center">
               <span className="font-black text-red-900">TOTAL GASTOS</span>
               <span className="text-xl font-black text-red-600">{formatMoney(totalExpenses)}</span>
             </div>
           </div>
 
-          {/* Observaciones */}
+          {/* BLOQUE 2: Marcador de Vueltas */}
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Marcador de Vueltas Registradas</h3>
+            <div className="grid grid-cols-4 gap-2">
+              {['v1', 'v2', 'v3', 'v4'].map((v, i) => {
+                const prevKey = i === 0 ? null : `v${i}`;
+                const isEnabled = i === 0 || laps[prevKey];
+                const isActive = laps[v];
+                return (
+                  <button
+                    key={v}
+                    onClick={() => {
+                      if (!isEnabled) return;
+                      // Al desactivar una vuelta, desactiva también las siguientes
+                      if (isActive) {
+                        const newLaps = { ...laps };
+                        ['v1','v2','v3','v4'].forEach((k, ki) => { if (ki >= i) newLaps[k] = false; });
+                        setLaps(newLaps);
+                      } else {
+                        setLaps({ ...laps, [v]: true });
+                      }
+                    }}
+                    className={`py-2 rounded-xl border-2 font-black transition-all
+                      ${isActive ? 'bg-emerald-100 border-emerald-500 text-emerald-700'
+                        : isEnabled ? 'bg-slate-50 border-slate-200 text-slate-400 hover:border-emerald-300'
+                        : 'bg-slate-100 border-slate-100 text-slate-300 cursor-not-allowed opacity-50'}`}
+                  >
+                    {isActive && <CheckCircle2 size={16} className="inline mr-1" />}
+                    V{i + 1}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* BLOQUE 3: Observaciones */}
           <div className="bg-yellow-50 rounded-2xl shadow-sm border border-yellow-200 p-4">
             <label className="font-bold text-yellow-900 text-sm flex items-center gap-2 mb-2"><MessageCircle size={16} /> Observaciones y Notas</label>
             <textarea
               className="w-full p-3 border border-yellow-300 rounded-xl outline-none focus:border-yellow-500 bg-white text-sm resize-none"
-              rows="3"
+              rows="2"
               placeholder="Ej: Desvío en ruta por accidente, compra de aditivo, etc."
               value={observations}
               onChange={(e) => setObservations(e.target.value)}
             ></textarea>
           </div>
 
-          {/* RESUMEN FINAL */}
-          <div className="bg-slate-900 text-white rounded-3xl shadow-xl overflow-hidden mt-6">
-            <div className="p-6 text-center">
-              <p className="text-sm text-slate-400 font-bold tracking-widest uppercase mb-1">Saldo a Entregar</p>
-              <div className={`text-5xl font-black ${totalBalance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+          {/* BLOQUE 4: Datos del Conductor y Vehículo */}
+          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2"><User size={14} /> Datos del Conductor y Vehículo <span className="text-emerald-500">(opcional)</span></h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <input type="text" placeholder="Nombre del Conductor" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-sm" value={headerInfo.driverName} onChange={e => setHeaderInfo({ ...headerInfo, driverName: e.target.value })} />
+              <input type="text" placeholder="RUT (Ej: 15.123.456-7)" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-sm" value={headerInfo.driverRut} onChange={e => setHeaderInfo({ ...headerInfo, driverRut: e.target.value })} />
+              <input type="text" placeholder="Empresa" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-sm" value={headerInfo.company} onChange={e => setHeaderInfo({ ...headerInfo, company: e.target.value })} />
+              <input type="text" placeholder="Recorrido" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-sm" value={headerInfo.route} onChange={e => setHeaderInfo({ ...headerInfo, route: e.target.value })} />
+              <input type="text" placeholder="Nº Patente" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-sm" value={headerInfo.plate} onChange={e => setHeaderInfo({ ...headerInfo, plate: e.target.value })} />
+              <input type="text" placeholder="Nº Máquina Interno" className="w-full p-3 border border-slate-200 rounded-xl outline-none focus:border-emerald-500 text-sm" value={headerInfo.machineNum} onChange={e => setHeaderInfo({ ...headerInfo, machineNum: e.target.value })} />
+            </div>
+          </div>
+
+          {/* BLOQUE 5: Destino del Reporte */}
+          <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100 space-y-2">
+            <h3 className="font-bold text-blue-900 text-sm uppercase flex items-center gap-2"><Send size={16} /> Destino del Reporte</h3>
+            <input
+              type="tel"
+              placeholder="WhatsApp de la Garita o Dueño (+569...)"
+              className="w-full p-3 border border-blue-200 rounded-xl outline-none focus:border-blue-500 font-medium text-sm"
+              value={headerInfo.garitaPhone}
+              onChange={e => setHeaderInfo({ ...headerInfo, garitaPhone: e.target.value })}
+            />
+          </div>
+
+          {/* BLOQUE 6: Saldo y Guardar */}
+          <div className="bg-slate-900 text-white rounded-2xl shadow-xl overflow-hidden">
+            <div className="p-4 text-center">
+              <p className="text-xs text-slate-400 font-bold tracking-widest uppercase mb-1">Saldo a Entregar</p>
+              <div className={`text-4xl font-black ${totalBalance >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                 {formatMoney(totalBalance)}
               </div>
             </div>
-            {/* Operación libre: el botón guarda la liquidación directamente, sin paywall */}
-            <button onClick={saveLiquidation} className="w-full bg-emerald-500 text-slate-900 font-black py-5 text-lg hover:bg-emerald-400 transition-colors flex justify-center items-center gap-2">
-              <ShieldCheck size={24} /> GUARDAR LIQUIDACIÓN
+            <button onClick={saveLiquidation} className="w-full bg-emerald-500 text-slate-900 font-black py-4 text-lg hover:bg-emerald-400 transition-colors flex justify-center items-center gap-2">
+              <ShieldCheck size={22} /> GUARDAR LIQUIDACIÓN
             </button>
           </div>
 
